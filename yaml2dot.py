@@ -49,7 +49,7 @@ def parse_yaml_files(files):
 def generate_dot_graph(inputs_config, outputs_config):
     """Generates a Graphviz dot graph from Cribl configurations."""
     dot = graphviz.Digraph("Cribl", comment="Cribl Configuration")
-    dot.attr(rankdir="LR", splines="ortho", nodesep="0.5", ranksep="1.5")
+    dot.attr(rankdir="LR", splines="polylines", nodesep="0.5", ranksep="1.5")
 
     with dot.subgraph() as s:
         s.attr(rank="source")
