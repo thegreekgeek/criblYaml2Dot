@@ -97,25 +97,8 @@ def generate_dot_graph(inputs_config, outputs_config):
     return dot
 
 
-def main():
-    """Main function."""
-    # Check for dependencies
-    try:
-        import graphviz
-        import yaml
-    except ImportError as e:
-        print(f"Missing dependency: {e.name}. Please install it.", file=sys.stderr)
-        if e.name == "yaml":
-            print("Try: pip install PyYAML", file=sys.stderr)
-        elif e.name == "graphviz":
-            print("Try: pip install graphviz", file=sys.stderr)
-            print(
-                "You also need to install the Graphviz command-line tools.",
-                file=sys.stderr,
-            )
-            print("See: https://graphviz.org/download/", file=sys.stderr)
-        sys.exit(1)
-
+def get_graph_object():
+    """Finds yaml files, parses them, and returns a graphviz Digraph object."""
     search_paths = ["../cribl/default", "../cribl/local"]
 
     # Find and parse inputs.yml files
@@ -130,6 +113,14 @@ def main():
 
     # Generate the dot graph
     dot_graph = generate_dot_graph(inputs_config, outputs_config)
+    return dot_graph
+
+
+def main():
+    """Main function for CLI usage."""
+    # Check for dependencies is done at the top level
+
+    dot_graph = get_graph_object()
 
     # Save and render the graph
     output_filename = "cribl_flow"

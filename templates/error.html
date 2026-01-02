@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+        }
+        .error-container {
+            border: 1px solid #f5c6cb;
+            background-color: #f8d7da;
+            padding: 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error</h1>
+        <p>An error occurred while generating the graph:</p>
+        <pre>{{ error_message }}</pre>
+        <p>Please ensure that the <code>../cribl/default</code> and <code>../cribl/local</code> directories exist and contain valid Cribl YAML files.</p>
+    </div>
+</body>
+</html>
