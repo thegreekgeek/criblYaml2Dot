@@ -116,7 +116,7 @@ def main():
             print("See: https://graphviz.org/download/", file=sys.stderr)
         sys.exit(1)
 
-    search_paths = ["default", "local"]
+    search_paths = ["../cribl/default", "../cribl/local"]
 
     # Find and parse inputs.yml files
     input_files = find_yaml_files(search_paths, "inputs.yml")
