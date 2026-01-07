@@ -4,11 +4,11 @@ import sys
 # Check for dependencies
 try:
     import graphviz
-    import yaml
+    import requests
 except ImportError as e:
     print(f"Missing dependency: {e.name}. Please install it.", file=sys.stderr)
-    if e.name == "yaml":
-        print("Try: pip install PyYAML", file=sys.stderr)
+    if e.name == "requests":
+        print("Try: pip install requests", file=sys.stderr)
     elif e.name == "graphviz":
         print("Try: pip install graphviz", file=sys.stderr)
         print(
@@ -18,32 +18,7 @@ except ImportError as e:
         print("See: https://graphviz.org/download/", file=sys.stderr)
     sys.exit(1)
 
-
-def find_yaml_files(search_paths, filename):
-    """Finds all YAML files with a given filename in a list of search paths."""
-    found_files = []
-    for path in search_paths:
-        for root, _, files in os.walk(path):
-            if filename in files:
-                found_files.append(os.path.join(root, filename))
-    return found_files
-
-
-def parse_yaml_files(files):
-    """Parses a list of YAML files and returns a merged dictionary."""
-    config = {}
-    for file in files:
-        try:
-            with open(file, "r") as f:
-                data = yaml.safe_load(f)
-                if data:
-                    # Simple merge: last one wins
-                    config.update(data)
-        except yaml.YAMLError as e:
-            print(f"Error parsing YAML file {file}: {e}", file=sys.stderr)
-        except IOError as e:
-            print(f"Error reading file {file}: {e}", file=sys.stderr)
-    return config
+from cribl_api import get_api_client_from_env
 
 
 def generate_dot_graph(inputs_config, outputs_config):
@@ -51,10 +26,14 @@ def generate_dot_graph(inputs_config, outputs_config):
     dot = graphviz.Digraph("Cribl", comment="Cribl Configuration")
     dot.attr(rankdir="LR", splines="polylines", nodesep="0.5", ranksep="1.5")
 
+    inputs = inputs_config.get("items", [])
+    outputs = outputs_config.get("items", [])
+
     with dot.subgraph() as s:
         s.attr(rank="source")
-        for input_id, input_data in inputs_config.get("inputs", {}).items():
+        for input_data in inputs:
             if not input_data.get("disabled", False):
+                input_id = input_data["id"]
                 description = input_data.get("description", "")
                 label = f"{input_id}"
                 if description:
@@ -70,7 +49,8 @@ def generate_dot_graph(inputs_config, outputs_config):
 
     with dot.subgraph() as s:
         s.attr(rank="sink")
-        for output_id, output_data in outputs_config.get("outputs", {}).items():
+        for output_data in outputs:
+            output_id = output_data["id"]
             description = output_data.get("description", "")
             label = f"{output_id}"
             if description:
@@ -85,8 +65,9 @@ def generate_dot_graph(inputs_config, outputs_config):
             )
 
     # Add edges for connections
-    for input_id, input_data in inputs_config.get("inputs", {}).items():
+    for input_data in inputs:
         if not input_data.get("disabled", False):
+            input_id = input_data["id"]
             connections = input_data.get("connections", [])
             for conn in connections:
                 if conn and "output" in conn:
@@ -97,19 +78,22 @@ def generate_dot_graph(inputs_config, outputs_config):
     return dot
 
 
-def get_graph_object():
-    """Finds yaml files, parses them, and returns a graphviz Digraph object."""
-    search_paths = ["../cribl/default", "../cribl/local"]
+def get_graph_object(group_id=None):
+    """
+    Fetches Cribl configurations from the API and returns a graphviz Digraph object.
+    """
+    api_client = get_api_client_from_env()
 
-    # Find and parse inputs.yml files
-    input_files = find_yaml_files(search_paths, "inputs.yml")
-    # a proper implementation would do a deep merge of the configs
-    # for now we'll just use the last one found, which is usually the local one
-    inputs_config = parse_yaml_files(input_files)
+    if not group_id:
+        groups = api_client.get_worker_groups().get("items", [])
+        if not groups:
+            raise Exception("No worker groups found.")
+        # Default to the first group if no group_id is provided
+        group_id = groups[0]["id"]
+        print(f"No group_id provided, using the first group found: {group_id}")
 
-    # Find and parse outputs.yml files
-    output_files = find_yaml_files(search_paths, "outputs.yml")
-    outputs_config = parse_yaml_files(output_files)
+    inputs_config = api_client.get_sources(group_id)
+    outputs_config = api_client.get_destinations(group_id)
 
     # Generate the dot graph
     dot_graph = generate_dot_graph(inputs_config, outputs_config)
@@ -118,9 +102,14 @@ def get_graph_object():
 
 def main():
     """Main function for CLI usage."""
-    # Check for dependencies is done at the top level
+    # The group_id can be passed as a command-line argument
+    group_id = sys.argv[1] if len(sys.argv) > 1 else None
 
-    dot_graph = get_graph_object()
+    try:
+        dot_graph = get_graph_object(group_id)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
     # Save and render the graph
     output_filename = "cribl_flow"
