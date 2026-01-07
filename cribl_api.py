@@ -56,7 +56,7 @@ class CriblAPI:
         Logs in to the Cribl API and retrieves an authentication token.
         """
         auth_payload = {"username": username, "password": password}
-        response = self._post("/auth/login", auth_payload)
+        response = self._post("/api/v1/auth/login", auth_payload)
         token = response.get("token")
         if not token:
             raise Exception("Authentication failed: token not found in response.")
