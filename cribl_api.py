@@ -6,26 +6,56 @@ import requests
 class CriblAPI:
     """
     A client for interacting with the Cribl API.
-    Assumes it is running on the leader node.
     """
 
-    def __init__(self, base_url="http://localhost:9000", token=None):
+    def __init__(
+        self, base_url="http://localhost:9000", username=None, password=None, token=None
+    ):
         """
         Initializes the CriblAPI client.
+        Authenticates and retrieves a token if username and password are provided.
 
         Args:
             base_url (str): The base URL of the Cribl API. Defaults to http://localhost:9000.
-            token (str): The authentication token.
+            username (str, optional): The username for authentication.
+            password (str, optional): The password for authentication.
+            token (str, optional): An existing authentication token.
         """
         self.base_url = base_url
+        self.headers = {"Content-Type": "application/json"}
+
         if token:
-            self.headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            }
+            self.headers["Authorization"] = f"Bearer {token}"
+        elif username and password:
+            self.login(username, password)
         else:
             # for on-prem, if you are on the master node, you might not need a token
-            self.headers = {"Content-Type": "application/json"}
+            pass
+
+    def _post(self, endpoint, payload):
+        """
+        Performs a POST request to the specified endpoint.
+        """
+        url = self.base_url + endpoint
+        try:
+            response = requests.post(url, headers=self.headers, json=payload)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Error connecting to Cribl API at {url}: {e}")
+            raise
+
+    def login(self, username, password):
+        """
+        Logs in to the Cribl API and retrieves an authentication token.
+        """
+        auth_payload = {"username": username, "password": password}
+        response = self._post("/auth/login", auth_payload)
+        token = response.get("token")
+        if not token:
+            raise Exception("Authentication failed: token not found in response.")
+        self.headers["Authorization"] = f"Bearer {token}"
+        print("Successfully authenticated and retrieved token.")
 
     def _get(self, endpoint):
         """
@@ -74,5 +104,7 @@ def get_api_client_from_env():
     """
     base_url = os.environ.get("CRIBL_BASE_URL", "http://localhost:9000")
     token = os.environ.get("CRIBL_AUTH_TOKEN")
+    username = os.environ.get("CRIBL_USERNAME")
+    password = os.environ.get("CRIBL_PASSWORD")
 
-    return CriblAPI(base_url, token)
+    return CriblAPI(base_url, username=username, password=password, token=token)
