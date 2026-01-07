@@ -18,3 +18,5 @@ The eventual end goal is to turn this into a dockerized application that can be 
  Additional documentation can be found in this folder, the files (./cribl_api_intro.md)[Cribl API Introduction] and (./cribl_api_update_configs.md)[Cribl API Update Configs]
  
  Cribl Stream APIdocs are [./cribl-apidocs-4.15.1-1b453caa.yml](cribl-apidocs-4.15.1-1b453caa.yml)
+ 
+ Api Authentication docs are available [./cribl_api_authentication.md])(HERE)
