@@ -2,7 +2,8 @@ import sys
 
 from flask import Flask, render_template
 
-import yaml2dot
+from cribl_api import get_api_client_from_env
+from graph_generator import generate_graph
 
 app = Flask(__name__)
 
@@ -23,12 +24,13 @@ def index():
     Generates the graph and renders it in an HTML template.
     """
     try:
-        dot = yaml2dot.get_graph_object()
+        api_client = get_api_client_from_env()
+        dot = generate_graph(api_client)
         # Use pipe to get the SVG content as a string
         svg_content = dot.pipe(format="svg").decode("utf-8")
     except Exception as e:
         # If anything goes wrong during graph generation, show an error page.
-        # This could happen if the yaml files are not found, for example.
+        # This could happen if the API is not available, for example.
         return render_template("error.html", error_message=str(e))
 
     return render_template("index.html", svg_content=svg_content)

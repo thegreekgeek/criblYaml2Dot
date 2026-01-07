@@ -13,3 +13,8 @@ The eventual end goal is to turn this into a dockerized application that can be 
     - creating a function to generate the dot file from the retrieved data.
  - Creating a dockerfile to build the application into a docker image.
  - Creating a docker-compose file to deploy the application to a observability cluster.
+ 
+ ## Additional Documentation
+ Additional documentation can be found in this folder, the files (./cribl_api_intro.md)[Cribl API Introduction] and (./cribl_api_update_configs.md)[Cribl API Update Configs]
+ 
+ Cribl Stream APIdocs are [./cribl-apidocs-4.15.1-1b453caa.yml](cribl-apidocs-4.15.1-1b453caa.yml)

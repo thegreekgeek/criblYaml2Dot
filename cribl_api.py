@@ -61,6 +61,12 @@ class CriblAPI:
         """
         return self._get(f"/api/v1/groups/{group_id}/destinations")
 
+    def get_pipelines(self, group_id):
+        """
+        Retrieves all pipelines for a given worker group.
+        """
+        return self._get(f"/api/v1/groups/{group_id}/pipelines")
+
 
 def get_api_client_from_env():
     """
