@@ -58,9 +58,7 @@ class CriblAPI:
         auth_payload = {"username": username, "password": password}
         response = self._post("/api/v1/auth/login", auth_payload)
         token = response.get("token")
-        if not token:
-            raise Exception("Authentication failed: token not found in response.")
-        self.headers["Authorization"] = f"Bearer {token}"
+        self.headers["Authorization"] = token
         print("Successfully authenticated and retrieved token.")
 
     def _get(self, endpoint):
