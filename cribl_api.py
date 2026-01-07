@@ -40,7 +40,13 @@ class CriblAPI:
         try:
             response = requests.post(url, headers=self.headers, json=payload)
             response.raise_for_status()
-            return response.json()
+            try:
+                return response.json()
+            except requests.exceptions.JSONDecodeError as e:
+                print(
+                    f"Failed to decode JSON from response. Status: {response.status_code}, Body: {response.text}"
+                )
+                raise e
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to Cribl API at {url}: {e}")
             raise
@@ -65,7 +71,13 @@ class CriblAPI:
         try:
             response = requests.get(url, headers=self.headers)
             response.raise_for_status()
-            return response.json()
+            try:
+                return response.json()
+            except requests.exceptions.JSONDecodeError as e:
+                print(
+                    f"Failed to decode JSON from response. Status: {response.status_code}, Body: {response.text}"
+                )
+                raise e
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to Cribl API at {url}: {e}")
             raise
