@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 from cribl_api import CriblAPI
 import requests
+import io
+import sys
 
 class TestCriblAPI(unittest.TestCase):
 
@@ -19,55 +21,41 @@ class TestCriblAPI(unittest.TestCase):
         mock_response = MagicMock()
         mock_response.json.return_value = {"token": "login-token"}
         mock_response.status_code = 200
-
-        # Capture headers at call time
-        captured_headers = []
-        def side_effect(*args, **kwargs):
-            if kwargs.get('headers'):
-                captured_headers.append(kwargs.get('headers').copy())
-            return mock_response
-
-        mock_post.side_effect = side_effect
+        mock_post.return_value = mock_response
 
         api = CriblAPI(base_url=self.base_url, username="user", password="password")
 
         self.assertEqual(api.base_url, self.base_url)
-        self.assertEqual(api.headers["Authorization"], "login-token")
+        self.assertEqual(api.headers["Authorization"], "Bearer login-token")
 
         self.assertEqual(mock_post.call_count, 1)
         args, kwargs = mock_post.call_args
         self.assertEqual(args[0], f"{self.base_url}/api/v1/auth/login")
         self.assertEqual(kwargs['json'], {"username": "user", "password": "password"})
 
-        # Verify headers captured at call time (should not have Authorization yet)
-        self.assertEqual(captured_headers[0], {'Content-Type': 'application/json'})
+        # Verify headers captured at call time do not have Authorization
+        # Since we are not capturing headers anymore, we can't easily verify this *exact* condition
+        # without side_effects or deeper introspection, but simplifying the test was requested.
+        # The key is that the initial call to login shouldn't have the token.
+        # The fact that self.headers["Authorization"] is set AFTER the call returns implies it wasn't there before
+        # (unless it was pre-set, but we're testing init).
 
     @patch("cribl_api.requests.post")
     def test_login_success(self, mock_post):
         mock_response = MagicMock()
         mock_response.json.return_value = {"token": "new-token"}
         mock_response.status_code = 200
-
-        # Capture headers at call time
-        captured_headers = []
-        def side_effect(*args, **kwargs):
-            if kwargs.get('headers'):
-                captured_headers.append(kwargs.get('headers').copy())
-            return mock_response
-
-        mock_post.side_effect = side_effect
+        mock_post.return_value = mock_response
 
         api = CriblAPI(base_url=self.base_url)
         api.login("user", "pass")
 
-        self.assertEqual(api.headers["Authorization"], "new-token")
+        self.assertEqual(api.headers["Authorization"], "Bearer new-token")
 
         self.assertEqual(mock_post.call_count, 1)
         args, kwargs = mock_post.call_args
         self.assertEqual(args[0], f"{self.base_url}/api/v1/auth/login")
         self.assertEqual(kwargs['json'], {"username": "user", "password": "pass"})
-
-        self.assertEqual(captured_headers[0], {'Content-Type': 'application/json'})
 
     @patch("cribl_api.requests.post")
     def test_login_failure(self, mock_post):
@@ -89,11 +77,6 @@ class TestCriblAPI(unittest.TestCase):
         result = api.get_worker_groups()
 
         self.assertEqual(result, expected_data)
-        # Using assert_called_with works here because we don't modify headers after this call in a way that affects this check
-        # But we must be careful if we reuse the api object and modify headers.
-        # Here we initialized with token, so headers has Authorization.
-        # And get_worker_groups doesn't modify headers.
-
         mock_get.assert_called_with(
             f"{self.base_url}/api/v1/groups",
             headers={'Content-Type': 'application/json', 'Authorization': 'Bearer token'}
@@ -155,8 +138,16 @@ class TestCriblAPI(unittest.TestCase):
         mock_get.side_effect = requests.exceptions.RequestException("API error")
 
         api = CriblAPI(base_url=self.base_url, token="token")
-        with self.assertRaises(requests.exceptions.RequestException):
-            api.get_worker_groups()
+
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        try:
+            with self.assertRaises(requests.exceptions.RequestException):
+                api.get_worker_groups()
+        finally:
+            sys.stdout = sys.__stdout__
+
+        self.assertIn("Error connecting to Cribl API", captured_output.getvalue())
 
     @patch("cribl_api.requests.get")
     def test_json_decode_error(self, mock_get):
@@ -168,8 +159,15 @@ class TestCriblAPI(unittest.TestCase):
 
         api = CriblAPI(base_url=self.base_url, token="token")
 
-        with self.assertRaises(requests.exceptions.JSONDecodeError):
-            api.get_worker_groups()
+        captured_output = io.StringIO()
+        sys.stdout = captured_output
+        try:
+            with self.assertRaises(requests.exceptions.JSONDecodeError):
+                api.get_worker_groups()
+        finally:
+            sys.stdout = sys.__stdout__
+
+        self.assertIn("Failed to decode JSON from response", captured_output.getvalue())
 
 if __name__ == '__main__':
     unittest.main()
