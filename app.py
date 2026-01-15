@@ -25,6 +25,9 @@ def index():
     """
     try:
         api_client = get_api_client_from_env()
+        if not api_client.headers.get("Authorization"):
+             raise ValueError("No authentication token or credentials provided. Please set CRIBL_AUTH_TOKEN or CRIBL_USERNAME and CRIBL_PASSWORD environment variables.")
+
         dot = generate_graph(api_client)
         # Use pipe to get the SVG content as a string
         svg_content = dot.pipe(format="svg").decode("utf-8")

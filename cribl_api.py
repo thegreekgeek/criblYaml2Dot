@@ -58,7 +58,7 @@ class CriblAPI:
         auth_payload = {"username": username, "password": password}
         response = self._post("/api/v1/auth/login", auth_payload)
         token = response.get("token")
-        self.headers["Authorization"] = token
+        self.headers["Authorization"] = f"Bearer {token}"
         print("Successfully authenticated and retrieved token.")
 
     def _get(self, endpoint):
