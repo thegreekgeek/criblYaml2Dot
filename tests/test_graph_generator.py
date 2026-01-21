@@ -52,7 +52,7 @@ class TestGraphGenerator(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             generate_graph(mock_api_client)
 
-        self.assertTrue("No worker groups found" in str(context.exception))
+        self.assertIn("No worker groups found", str(context.exception))
 
 if __name__ == '__main__':
     unittest.main()
