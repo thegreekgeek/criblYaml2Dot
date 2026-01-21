@@ -25,7 +25,10 @@ class CriblAPI:
         self.headers = {"Content-Type": "application/json"}
 
         if token:
-            self.headers["Authorization"] = f"Bearer {token}"
+            if token.startswith("Bearer "):
+                self.headers["Authorization"] = token
+            else:
+                self.headers["Authorization"] = f"Bearer {token}"
         elif username and password:
             self.login(username, password)
         else:
@@ -47,6 +50,14 @@ class CriblAPI:
                     f"Failed to decode JSON from response. Status: {response.status_code}, Body: {response.text}"
                 )
                 raise e
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 401:
+                print(
+                    f"Authentication failed for {url}. Please check your credentials "
+                    "(CRIBL_USERNAME, CRIBL_PASSWORD) or auth token (CRIBL_AUTH_TOKEN)."
+                )
+            print(f"HTTP error connecting to Cribl API at {url}: {e}")
+            raise
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to Cribl API at {url}: {e}")
             raise
@@ -58,6 +69,8 @@ class CriblAPI:
         auth_payload = {"username": username, "password": password}
         response = self._post("/api/v1/auth/login", auth_payload)
         token = response.get("token")
+        if token and not token.startswith("Bearer "):
+            token = f"Bearer {token}"
         self.headers["Authorization"] = token
         print("Successfully authenticated and retrieved token.")
 
@@ -76,6 +89,14 @@ class CriblAPI:
                     f"Failed to decode JSON from response. Status: {response.status_code}, Body: {response.text}"
                 )
                 raise e
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 401:
+                print(
+                    f"Authentication failed for {url}. Please check your credentials "
+                    "(CRIBL_USERNAME, CRIBL_PASSWORD) or auth token (CRIBL_AUTH_TOKEN)."
+                )
+            print(f"HTTP error connecting to Cribl API at {url}: {e}")
+            raise
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to Cribl API at {url}: {e}")
             raise
