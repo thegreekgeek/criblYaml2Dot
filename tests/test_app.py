@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from graph_generator import generate_graph
 
 class TestGraphGenerator(unittest.TestCase):
@@ -41,11 +41,15 @@ class TestGraphGenerator(unittest.TestCase):
         self.assertIn("Syslog Input", source)
         self.assertIn('label=main', source)
 
+        # Verify API calls
+        self.mock_api.get_worker_groups.assert_called_once()
+        self.mock_api.get_sources.assert_called_with("default")
+        self.mock_api.get_destinations.assert_called_with("default")
+
     def test_generate_graph_no_groups(self):
         self.mock_api.get_worker_groups.return_value = {"items": []}
-        with self.assertRaises(Exception) as context:
+        with self.assertRaisesRegex(Exception, "No worker groups found"):
             generate_graph(self.mock_api)
-        self.assertTrue("No worker groups found" in str(context.exception))
 
 if __name__ == "__main__":
     unittest.main()
