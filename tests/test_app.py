@@ -18,6 +18,12 @@ class TestGraphGenerator(unittest.TestCase):
                     "disabled": False,
                     "connections": [{"output": "out_s3", "pipeline": "main"}],
                     "description": "Syslog Input"
+                },
+                {
+                    "id": "in_disabled",
+                    "disabled": True,
+                    "connections": [],
+                    "description": "Disabled Input"
                 }
             ]
         }
@@ -40,6 +46,10 @@ class TestGraphGenerator(unittest.TestCase):
         self.assertIn("default_out_s3", source)
         self.assertIn("Syslog Input", source)
         self.assertIn('label=main', source)
+
+        # Verify disabled inputs are not present
+        self.assertNotIn("in_disabled", source)
+        self.assertNotIn("Disabled Input", source)
 
         # Verify API calls
         self.mock_api.get_worker_groups.assert_called_once()
