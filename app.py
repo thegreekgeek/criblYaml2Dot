@@ -1,9 +1,13 @@
 import sys
+import os
 
 from flask import Flask, render_template
+from dotenv import load_dotenv
 
 from cribl_api import get_api_client_from_env
 from graph_generator import generate_graph
+
+load_dotenv()
 
 app = Flask(__name__)
 
