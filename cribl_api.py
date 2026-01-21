@@ -83,29 +83,30 @@ class CriblAPI:
     def get_worker_groups(self):
         """
         Retrieves all worker groups.
-        Assumes the endpoint is /api/v1/groups.
+        Assumes the endpoint is /api/v1/master/groups.
         """
-        return self._get("/api/v1/groups")
+        return self._get("/api/v1/master/groups")
 
     def get_sources(self, group_id):
         """
         Retrieves all sources (inputs) for a given worker group.
-        Assumes the endpoint is /api/v1/groups/<group_id>/sources.
+        Assumes the endpoint is /api/v1/m/<group_id>/system/inputs.
         """
-        return self._get(f"/api/v1/groups/{group_id}/sources")
+        return self._get(f"/api/v1/m/{group_id}/system/inputs")
 
     def get_destinations(self, group_id):
         """
         Retrieves all destinations (outputs) for a given worker group.
-        Assumes the endpoint is /api/v1/groups/<group_id>/destinations.
+        Assumes the endpoint is /api/v1/m/<group_id>/system/outputs.
         """
-        return self._get(f"/api/v1/groups/{group_id}/destinations")
+        return self._get(f"/api/v1/m/{group_id}/system/outputs")
 
     def get_pipelines(self, group_id):
         """
         Retrieves all pipelines for a given worker group.
+        Assumes the endpoint is /api/v1/m/<group_id>/pipelines.
         """
-        return self._get(f"/api/v1/groups/{group_id}/pipelines")
+        return self._get(f"/api/v1/m/{group_id}/pipelines")
 
 
 def get_api_client_from_env():

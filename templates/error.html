@@ -24,7 +24,11 @@
         <h1>Error</h1>
         <p>An error occurred while generating the graph:</p>
         <pre>{{ error_message }}</pre>
-        <p>Please ensure that the <code>../cribl/default</code> and <code>../cribl/local</code> directories exist and contain valid Cribl YAML files.</p>
+        <p>Please ensure that the Cribl API is accessible and that the following environment variables are set correctly:</p>
+        <ul>
+            <li><code>CRIBL_BASE_URL</code> (defaults to http://localhost:9000)</li>
+            <li><code>CRIBL_AUTH_TOKEN</code> or <code>CRIBL_USERNAME</code> and <code>CRIBL_PASSWORD</code></li>
+        </ul>
     </div>
 </body>
 </html>
