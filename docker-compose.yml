@@ -9,9 +9,9 @@ services:
       # Set the following environment variables to point to your Cribl instance.
       # These can be set in a .env file or the shell environment.
       # The defaults are defined in the Dockerfile if not provided here.
-      - CRIBL_BASE_URL
-      - CRIBL_AUTH_TOKEN
-      - CRIBL_USERNAME
-      - CRIBL_PASSWORD
+      - CRIBL_BASE_URL=${CRIBL_BASE_URL:-http://localhost:9000}
+      - CRIBL_AUTH_TOKEN=${CRIBL_AUTH_TOKEN}
+      - CRIBL_USERNAME=${CRIBL_USERNAME}
+      - CRIBL_PASSWORD=${CRIBL_PASSWORD}
     # You can add a restart policy if you want the container to restart automatically
     # restart: unless-stopped
