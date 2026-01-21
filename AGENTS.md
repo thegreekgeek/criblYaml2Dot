@@ -19,4 +19,4 @@ The eventual end goal is to turn this into a dockerized application that can be 
  
  Cribl Stream APIdocs are [./cribl-apidocs-4.15.1-1b453caa.yml](cribl-apidocs-4.15.1-1b453caa.yml)
  
- Api Authentication docs are available [./cribl_api_authentication.md])(HERE)
+ Api Authentication docs are available [./cribl_api_authentication.md](HERE)
