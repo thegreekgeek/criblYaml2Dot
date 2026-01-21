@@ -27,9 +27,10 @@ def generate_graph(api_client):
                     if not input_data.get("disabled", False):
                         input_id = input_data["id"]
                         description = input_data.get("description", "")
-                        label = f"{input_id}"
                         if description:
-                            label += f"\n------------\n{description}"
+                            label = f"{input_id}\n------------\n{description}"
+                        else:
+                            label = f"{input_id}"
                         s.node(
                             f"{group_id}_{input_id}",
                             label=label,
@@ -44,9 +45,10 @@ def generate_graph(api_client):
                 for output_data in outputs:
                     output_id = output_data["id"]
                     description = output_data.get("description", "")
-                    label = f"{output_id}"
                     if description:
-                        label += f"\n------------\n{description}"
+                        label = f"{output_id}\n------------\n{description}"
+                    else:
+                        label = f"{output_id}"
                     s.node(
                         f"{group_id}_{output_id}",
                         label=label,
