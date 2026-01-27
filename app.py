@@ -11,16 +11,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Check for Flask dependency, and provide a helpful error message if it's missing.
-try:
-    from flask import Flask
-except ImportError:
-    print(
-        "Flask is not installed. Please install it by running 'pip install Flask'",
-        file=sys.stderr,
-    )
-    sys.exit(1)
-
 
 @app.route("/")
 def index():
@@ -42,4 +32,6 @@ def index():
 
 if __name__ == "__main__":
     # Adding host='0.0.0.0' makes the app accessible from the network
-    app.run(debug=True, host="0.0.0.0")
+    # Use DEBUG from environment variable, default to False
+    debug_mode = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+    app.run(debug=debug_mode, host="0.0.0.0")
