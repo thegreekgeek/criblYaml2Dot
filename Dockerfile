@@ -20,7 +20,8 @@ EXPOSE 5000
 # Define environment variables for the Cribl API.
 # These should be set when running the container.
 ENV CRIBL_BASE_URL="http://localhost:9000"
-ENV CRIBL_AUTH_TOKEN=""
+ENV CRIBL_USERNAME=""
+ENV CRIBL_PASSWORD=""
 
 # Run app.py when the container launches
 CMD ["python", "app.py"]
