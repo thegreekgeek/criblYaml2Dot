@@ -12,13 +12,24 @@ load_dotenv()
 app = Flask(__name__)
 
 
+# Global variable to cache the API client
+_api_client = None
+
+
+def get_cached_api_client():
+    global _api_client
+    if _api_client is None:
+        _api_client = get_api_client_from_env()
+    return _api_client
+
+
 @app.route("/")
 def index():
     """
     Generates the graph and renders it in an HTML template.
     """
     try:
-        api_client = get_api_client_from_env()
+        api_client = get_cached_api_client()
         dot = generate_graph(api_client)
         # Use pipe to get the SVG content as a string
         svg_content = dot.pipe(format="svg").decode("utf-8")
