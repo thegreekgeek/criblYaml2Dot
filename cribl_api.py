@@ -1,6 +1,6 @@
 import os
 
-import requests
+from requests import Session
 
 
 class CriblAPI:
@@ -22,13 +22,14 @@ class CriblAPI:
             token (str, optional): An existing authentication token.
         """
         self.base_url = base_url
-        self.headers = {"Content-Type": "application/json"}
+        self.session = Session()
+        self.session.headers.update({"Content-Type": "application/json"})
 
         if token:
             if token.startswith("Bearer "):
-                self.headers["Authorization"] = token
+                self.session.headers["Authorization"] = token
             else:
-                self.headers["Authorization"] = f"Bearer {token}"
+                self.session.headers["Authorization"] = f"Bearer {token}"
         elif username and password:
             self.login(username, password)
         else:
@@ -41,7 +42,7 @@ class CriblAPI:
         """
         url = self.base_url + endpoint
         try:
-            response = requests.post(url, headers=self.headers, json=payload)
+            response = self.session.post(url, json=payload)
             response.raise_for_status()
             try:
                 return response.json()
@@ -71,7 +72,7 @@ class CriblAPI:
         token = response.get("token")
         if token and not token.startswith("Bearer "):
             token = f"Bearer {token}"
-        self.headers["Authorization"] = token
+        self.session.headers["Authorization"] = token
         print("Successfully authenticated and retrieved token.")
 
     def _get(self, endpoint):
@@ -80,7 +81,7 @@ class CriblAPI:
         """
         url = self.base_url + endpoint
         try:
-            response = requests.get(url, headers=self.headers)
+            response = self.session.get(url)
             response.raise_for_status()
             try:
                 return response.json()
