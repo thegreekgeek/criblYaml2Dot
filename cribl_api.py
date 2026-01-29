@@ -140,3 +140,17 @@ def get_api_client_from_env():
     password = os.environ.get("CRIBL_PASSWORD")
 
     return CriblAPI(base_url, username=username, password=password, token=token)
+
+
+# Global variable to cache the API client
+_cached_api_client = None
+
+
+def get_cached_api_client():
+    """
+    Returns a cached CriblAPI client, initializing it if necessary.
+    """
+    global _cached_api_client
+    if _cached_api_client is None:
+        _cached_api_client = get_api_client_from_env()
+    return _cached_api_client

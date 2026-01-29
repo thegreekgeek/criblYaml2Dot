@@ -4,23 +4,12 @@ import os
 from flask import Flask, render_template
 from dotenv import load_dotenv
 
-from cribl_api import get_api_client_from_env
+from cribl_api import get_cached_api_client
 from graph_generator import generate_graph
 
 load_dotenv()
 
 app = Flask(__name__)
-
-
-# Global variable to cache the API client
-_api_client = None
-
-
-def get_cached_api_client():
-    global _api_client
-    if _api_client is None:
-        _api_client = get_api_client_from_env()
-    return _api_client
 
 
 @app.route("/")
