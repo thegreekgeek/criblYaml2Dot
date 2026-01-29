@@ -1,5 +1,5 @@
 import os
-import requests
+from requests import Session, exceptions
 
 
 class CriblAPI:
@@ -21,7 +21,7 @@ class CriblAPI:
             token (str, optional): An existing authentication token.
         """
         self.base_url = base_url
-        self.session = requests.Session()
+        self.session = Session()
         self.session.headers.update({"Content-Type": "application/json"})
 
         if token:
@@ -45,12 +45,12 @@ class CriblAPI:
             response.raise_for_status()
             try:
                 return response.json()
-            except requests.exceptions.JSONDecodeError as e:
+            except exceptions.JSONDecodeError as e:
                 print(
                     f"Failed to decode JSON from response. Status: {response.status_code}, Body: {response.text}"
                 )
                 raise e
-        except requests.exceptions.HTTPError as e:
+        except exceptions.HTTPError as e:
             if e.response.status_code == 401:
                 print(
                     f"Authentication failed for {url}. Please check your credentials "
@@ -58,7 +58,7 @@ class CriblAPI:
                 )
             print(f"HTTP error connecting to Cribl API at {url}: {e}")
             raise
-        except requests.exceptions.RequestException as e:
+        except exceptions.RequestException as e:
             print(f"Error connecting to Cribl API at {url}: {e}")
             raise
 
@@ -84,12 +84,12 @@ class CriblAPI:
             response.raise_for_status()
             try:
                 return response.json()
-            except requests.exceptions.JSONDecodeError as e:
+            except exceptions.JSONDecodeError as e:
                 print(
                     f"Failed to decode JSON from response. Status: {response.status_code}, Body: {response.text}"
                 )
                 raise e
-        except requests.exceptions.HTTPError as e:
+        except exceptions.HTTPError as e:
             if e.response.status_code == 401:
                 print(
                     f"Authentication failed for {url}. Please check your credentials "
@@ -97,7 +97,7 @@ class CriblAPI:
                 )
             print(f"HTTP error connecting to Cribl API at {url}: {e}")
             raise
-        except requests.exceptions.RequestException as e:
+        except exceptions.RequestException as e:
             print(f"Error connecting to Cribl API at {url}: {e}")
             raise
 
@@ -125,7 +125,7 @@ class CriblAPI:
     def get_pipelines(self, group_id):
         """
         Retrieves all pipelines for a given worker group.
-        Assumes the endpoint is /api/v1/m/<group_id>/pipelines.
+        Assumes the endpoint is /api/v1/m/<group_id}/pipelines.
         """
         return self._get(f"/api/v1/m/{group_id}/pipelines")
 
