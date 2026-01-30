@@ -41,7 +41,14 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 
 ## Configuration
 
-The application is configured using environment variables:
+The application is configured using environment variables. You can set them in your shell or use a `.env` file.
+
+1.  Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+
+2.  Edit `.env` and update the values:
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
@@ -49,19 +56,13 @@ The application is configured using environment variables:
 | `CRIBL_AUTH_TOKEN` | Your Cribl authentication token. | *(Empty)* |
 | `CRIBL_USERNAME` | Username for auth (if token not provided). | *(Empty)* |
 | `CRIBL_PASSWORD` | Password for auth (if token not provided). | *(Empty)* |
+| `FLASK_DEBUG` | Enable Flask debug mode. | `False` |
 
 ## Usage
 
 ### Running Locally
 
-1.  Set the environment variables (example):
-    ```bash
-    export CRIBL_BASE_URL="http://my-cribl-instance:9000"
-    export CRIBL_USERNAME="admin"
-    export CRIBL_PASSWORD="password"
-    # OR
-    export CRIBL_AUTH_TOKEN="your-token"
-    ```
+1.  Ensure your `.env` file is configured properly.
 
 2.  Run the application:
     ```bash
@@ -77,9 +78,17 @@ The application is configured using environment variables:
     docker-compose up --build
     ```
 
-    *Note: You may need to edit `docker-compose.yml` to set your specific environment variables.*
+    *Note: The `docker-compose.yml` file is configured to read from your `.env` file if it exists.*
 
 2.  Access the application at `http://localhost:8080`.
+
+## Code Documentation
+
+The source code includes docstrings for modules, classes, and functions. You can inspect the code directly or use Python's help system:
+
+```bash
+python -c "import cribl_api; help(cribl_api)"
+```
 
 ## Testing
 

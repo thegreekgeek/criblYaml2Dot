@@ -16,6 +16,13 @@ app = Flask(__name__)
 def index():
     """
     Generates the graph and renders it in an HTML template.
+
+    Retrieves the cached API client, generates a graph of the Cribl configuration,
+    and renders the 'index.html' template with the SVG content.
+    If an error occurs, renders the 'error.html' template with the error message.
+
+    Returns:
+        str: Rendered HTML content.
     """
     try:
         api_client = get_cached_api_client()
