@@ -1,4 +1,5 @@
 import os
+import requests
 
 from requests import Session
 
@@ -39,6 +40,18 @@ class CriblAPI:
     def _post(self, endpoint, payload):
         """
         Performs a POST request to the specified endpoint.
+
+        Args:
+            endpoint (str): The API endpoint path (e.g., /api/v1/auth/login).
+            payload (dict): The JSON payload to send.
+
+        Returns:
+            dict: The JSON response from the API.
+
+        Raises:
+            requests.exceptions.JSONDecodeError: If the response is not valid JSON.
+            requests.exceptions.HTTPError: If the API returns an error status code.
+            requests.exceptions.RequestException: For other request-related errors.
         """
         url = self.base_url + endpoint
         try:
@@ -66,6 +79,11 @@ class CriblAPI:
     def login(self, username, password):
         """
         Logs in to the Cribl API and retrieves an authentication token.
+        Updates the session headers with the retrieved token.
+
+        Args:
+            username (str): The username for authentication.
+            password (str): The password for authentication.
         """
         auth_payload = {"username": username, "password": password}
         response = self._post("/api/v1/auth/login", auth_payload)
@@ -78,6 +96,17 @@ class CriblAPI:
     def _get(self, endpoint):
         """
         Performs a GET request to the specified endpoint.
+
+        Args:
+            endpoint (str): The API endpoint path.
+
+        Returns:
+            dict: The JSON response from the API.
+
+        Raises:
+            requests.exceptions.JSONDecodeError: If the response is not valid JSON.
+            requests.exceptions.HTTPError: If the API returns an error status code.
+            requests.exceptions.RequestException: For other request-related errors.
         """
         url = self.base_url + endpoint
         try:
@@ -105,28 +134,45 @@ class CriblAPI:
     def get_worker_groups(self):
         """
         Retrieves all worker groups.
-        Assumes the endpoint is /api/v1/master/groups.
+
+        Returns:
+            dict: The response containing the list of worker groups.
         """
         return self._get("/api/v1/master/groups")
 
     def get_sources(self, group_id):
         """
         Retrieves all sources (inputs) for a given worker group.
-        Assumes the endpoint is /api/v1/m/<group_id>/system/inputs.
+
+        Args:
+            group_id (str): The ID of the worker group.
+
+        Returns:
+            dict: The response containing the list of sources.
         """
         return self._get(f"/api/v1/m/{group_id}/system/inputs")
 
     def get_destinations(self, group_id):
         """
         Retrieves all destinations (outputs) for a given worker group.
-        Assumes the endpoint is /api/v1/m/<group_id>/system/outputs.
+
+        Args:
+            group_id (str): The ID of the worker group.
+
+        Returns:
+            dict: The response containing the list of destinations.
         """
         return self._get(f"/api/v1/m/{group_id}/system/outputs")
 
     def get_pipelines(self, group_id):
         """
         Retrieves all pipelines for a given worker group.
-        Assumes the endpoint is /api/v1/m/<group_id>/pipelines.
+
+        Args:
+            group_id (str): The ID of the worker group.
+
+        Returns:
+            dict: The response containing the list of pipelines.
         """
         return self._get(f"/api/v1/m/{group_id}/pipelines")
 
@@ -134,6 +180,12 @@ class CriblAPI:
 def get_api_client_from_env():
     """
     Creates a CriblAPI client from environment variables.
+
+    Reads CRIBL_BASE_URL, CRIBL_AUTH_TOKEN, CRIBL_USERNAME, and CRIBL_PASSWORD
+    from the environment.
+
+    Returns:
+        CriblAPI: An initialized CriblAPI client.
     """
     base_url = os.environ.get("CRIBL_BASE_URL", "http://localhost:9000")
     token = os.environ.get("CRIBL_AUTH_TOKEN")
@@ -150,6 +202,9 @@ _cached_api_client = None
 def get_cached_api_client():
     """
     Returns a cached CriblAPI client, initializing it if necessary.
+
+    Returns:
+        CriblAPI: The cached CriblAPI client instance.
     """
     global _cached_api_client
     if _cached_api_client is None:
