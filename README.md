@@ -34,33 +34,42 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
     cd <repository-directory>
     ```
 
-2.  Install Python dependencies:
+2.  Set up a virtual environment (recommended):
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    ```
+
+3.  Install Python dependencies:
     ```bash
     pip install -r requirements.txt
     ```
 
 ## Configuration
 
-The application is configured using environment variables:
+The application is configured using environment variables. You can set these in your shell or create a `.env` file (copy from `.env.example` if available).
 
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `CRIBL_BASE_URL` | The base URL of your Cribl Stream API. | `http://localhost:9000` |
-| `CRIBL_AUTH_TOKEN` | Your Cribl authentication token. | *(Empty)* |
-| `CRIBL_USERNAME` | Username for auth (if token not provided). | *(Empty)* |
-| `CRIBL_PASSWORD` | Password for auth (if token not provided). | *(Empty)* |
+| Variable | Description | Default (Local) | Default (Docker) |
+| :--- | :--- | :--- | :--- |
+| `CRIBL_BASE_URL` | The base URL of your Cribl Stream API. | `http://localhost:9000` | `http://host.docker.internal:9000` |
+| `CRIBL_AUTH_TOKEN` | Your Cribl authentication token. | *(Empty)* | *(Empty)* |
+| `CRIBL_USERNAME` | Username for auth (if token not provided). | *(Empty)* | *(Empty)* |
+| `CRIBL_PASSWORD` | Password for auth (if token not provided). | *(Empty)* | *(Empty)* |
 
 ## Usage
 
 ### Running Locally
 
-1.  Set the environment variables (example):
+1.  Set the environment variables or create a `.env` file:
+    ```bash
+    cp .env.example .env
+    # Edit .env with your credentials
+    ```
+    Or manually export them:
     ```bash
     export CRIBL_BASE_URL="http://my-cribl-instance:9000"
     export CRIBL_USERNAME="admin"
     export CRIBL_PASSWORD="password"
-    # OR
-    export CRIBL_AUTH_TOKEN="your-token"
     ```
 
 2.  Run the application:
@@ -77,7 +86,7 @@ The application is configured using environment variables:
     docker-compose up --build
     ```
 
-    *Note: You may need to edit `docker-compose.yml` to set your specific environment variables.*
+    *Note: The `docker-compose.yml` file is configured to look for a `.env` file. It also sets `CRIBL_BASE_URL` to `http://host.docker.internal:9000` by default, which allows the container to access Cribl running on the host machine.*
 
 2.  Access the application at `http://localhost:8080`.
 

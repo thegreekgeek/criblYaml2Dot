@@ -21,6 +21,12 @@ class TestGraphGenerator(unittest.TestCase):
                     "connections": [
                         {"output": "out_s3", "pipeline": "main"}
                     ]
+                },
+                {
+                    "id": "in_disabled",
+                    "description": "Disabled Input",
+                    "disabled": True,
+                    "connections": []
                 }
             ]
         }
@@ -40,10 +46,17 @@ class TestGraphGenerator(unittest.TestCase):
         # Basic assertions on the generated graph content
         source_code = dot.source
         self.assertIn('label=default', source_code)
+
+        # Check enabled node
         # Graphviz might escape newlines differently depending on version
         self.assertTrue('label="in_syslog\n------------\nSyslog Input"' in source_code or 'label="in_syslog\\n------------\\nSyslog Input"' in source_code)
         self.assertTrue('label="out_s3\n------------\nS3 Output"' in source_code or 'label="out_s3\\n------------\\nS3 Output"' in source_code)
         self.assertIn('default_in_syslog -> default_out_s3', source_code)
+
+        # Check disabled node is NOT present
+        self.assertNotIn("in_disabled", source_code)
+        self.assertNotIn("Disabled Input", source_code)
+
 
     def test_generate_graph_no_groups(self):
         mock_api_client = MagicMock()

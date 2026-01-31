@@ -1,65 +1,36 @@
 import unittest
-from unittest.mock import MagicMock
-from graph_generator import generate_graph
+from unittest.mock import patch, MagicMock
+from app import app
 
-class TestGraphGenerator(unittest.TestCase):
+class TestApp(unittest.TestCase):
     def setUp(self):
-        self.mock_api = MagicMock()
+        self.app = app.test_client()
+        self.app.testing = True
 
-    def test_generate_graph_success(self):
-        # Mock API responses
-        self.mock_api.get_worker_groups.return_value = {
-            "items": [{"id": "default"}]
-        }
-        self.mock_api.get_sources.return_value = {
-            "items": [
-                {
-                    "id": "in_syslog",
-                    "disabled": False,
-                    "connections": [{"output": "out_s3", "pipeline": "main"}],
-                    "description": "Syslog Input"
-                },
-                {
-                    "id": "in_disabled",
-                    "disabled": True,
-                    "connections": [],
-                    "description": "Disabled Input"
-                }
-            ]
-        }
-        self.mock_api.get_destinations.return_value = {
-            "items": [
-                {
-                    "id": "out_s3",
-                    "description": "S3 Output"
-                }
-            ]
-        }
+    @patch('app.get_cached_api_client')
+    @patch('app.generate_graph')
+    def test_index_success(self, mock_generate_graph, mock_get_client):
+        # Mock the API client
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
 
-        # Generate graph
-        dot = generate_graph(self.mock_api)
+        # Mock the graph generation
+        mock_dot = MagicMock()
+        mock_dot.pipe.return_value = b"<svg>...</svg>"
+        mock_generate_graph.return_value = mock_dot
 
-        # Verify graph content
-        source = dot.source
-        self.assertIn("cluster_default", source)
-        self.assertIn("default_in_syslog", source)
-        self.assertIn("default_out_s3", source)
-        self.assertIn("Syslog Input", source)
-        self.assertIn('label=main', source)
+        response = self.app.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"<svg>...</svg>", response.data)
 
-        # Verify disabled inputs are not present
-        self.assertNotIn("in_disabled", source)
-        self.assertNotIn("Disabled Input", source)
+    @patch('app.get_cached_api_client')
+    def test_index_error(self, mock_get_client):
+        # Mock an exception
+        mock_get_client.side_effect = Exception("API connection failed")
 
-        # Verify API calls
-        self.mock_api.get_worker_groups.assert_called_once()
-        self.mock_api.get_sources.assert_called_with("default")
-        self.mock_api.get_destinations.assert_called_with("default")
+        response = self.app.get('/')
+        self.assertEqual(response.status_code, 200)  # It renders error.html, which is 200 OK usually
+        self.assertIn(b"API connection failed", response.data)
 
-    def test_generate_graph_no_groups(self):
-        self.mock_api.get_worker_groups.return_value = {"items": []}
-        with self.assertRaisesRegex(Exception, "No worker groups found"):
-            generate_graph(self.mock_api)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

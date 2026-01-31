@@ -1,5 +1,8 @@
+"""
+This module provides the CriblAPI client for interacting with the Cribl Stream API.
+"""
 import os
-
+import requests
 from requests import Session
 
 
@@ -39,6 +42,16 @@ class CriblAPI:
     def _post(self, endpoint, payload):
         """
         Performs a POST request to the specified endpoint.
+
+        Args:
+            endpoint (str): The API endpoint path.
+            payload (dict): The JSON payload to send.
+
+        Returns:
+            dict: The JSON response.
+
+        Raises:
+            requests.exceptions.RequestException: If the request fails.
         """
         url = self.base_url + endpoint
         try:
@@ -66,6 +79,10 @@ class CriblAPI:
     def login(self, username, password):
         """
         Logs in to the Cribl API and retrieves an authentication token.
+
+        Args:
+            username (str): The username.
+            password (str): The password.
         """
         auth_payload = {"username": username, "password": password}
         response = self._post("/api/v1/auth/login", auth_payload)
@@ -78,6 +95,15 @@ class CriblAPI:
     def _get(self, endpoint):
         """
         Performs a GET request to the specified endpoint.
+
+        Args:
+            endpoint (str): The API endpoint path.
+
+        Returns:
+            dict: The JSON response.
+
+        Raises:
+            requests.exceptions.RequestException: If the request fails.
         """
         url = self.base_url + endpoint
         try:
@@ -106,6 +132,9 @@ class CriblAPI:
         """
         Retrieves all worker groups.
         Assumes the endpoint is /api/v1/master/groups.
+
+        Returns:
+            dict: The response containing worker groups.
         """
         return self._get("/api/v1/master/groups")
 
@@ -113,6 +142,12 @@ class CriblAPI:
         """
         Retrieves all sources (inputs) for a given worker group.
         Assumes the endpoint is /api/v1/m/<group_id>/system/inputs.
+
+        Args:
+            group_id (str): The ID of the worker group.
+
+        Returns:
+            dict: The response containing sources.
         """
         return self._get(f"/api/v1/m/{group_id}/system/inputs")
 
@@ -120,6 +155,12 @@ class CriblAPI:
         """
         Retrieves all destinations (outputs) for a given worker group.
         Assumes the endpoint is /api/v1/m/<group_id>/system/outputs.
+
+        Args:
+            group_id (str): The ID of the worker group.
+
+        Returns:
+            dict: The response containing destinations.
         """
         return self._get(f"/api/v1/m/{group_id}/system/outputs")
 
@@ -127,6 +168,12 @@ class CriblAPI:
         """
         Retrieves all pipelines for a given worker group.
         Assumes the endpoint is /api/v1/m/<group_id>/pipelines.
+
+        Args:
+            group_id (str): The ID of the worker group.
+
+        Returns:
+            dict: The response containing pipelines.
         """
         return self._get(f"/api/v1/m/{group_id}/pipelines")
 
@@ -134,6 +181,9 @@ class CriblAPI:
 def get_api_client_from_env():
     """
     Creates a CriblAPI client from environment variables.
+
+    Returns:
+        CriblAPI: A configured CriblAPI instance.
     """
     base_url = os.environ.get("CRIBL_BASE_URL", "http://localhost:9000")
     token = os.environ.get("CRIBL_AUTH_TOKEN")
@@ -150,6 +200,9 @@ _cached_api_client = None
 def get_cached_api_client():
     """
     Returns a cached CriblAPI client, initializing it if necessary.
+
+    Returns:
+        CriblAPI: The cached CriblAPI instance.
     """
     global _cached_api_client
     if _cached_api_client is None:
