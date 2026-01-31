@@ -1,9 +1,21 @@
+"""
+This module contains logic for generating Graphviz graphs from Cribl configuration.
+"""
 import graphviz
 
 
 def generate_graph(api_client):
     """
     Fetches Cribl configurations from the API and returns a graphviz Digraph object.
+
+    Args:
+        api_client (CriblAPI): The API client instance to use for fetching configuration.
+
+    Returns:
+        graphviz.Digraph: The generated directed graph.
+
+    Raises:
+        Exception: If no worker groups are found.
     """
     dot = graphviz.Digraph("Cribl", comment="Cribl Configuration")
     dot.attr(rankdir="LR", splines="polylines", nodesep="0.5", ranksep="1.5")

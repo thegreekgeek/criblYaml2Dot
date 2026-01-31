@@ -1,3 +1,10 @@
+"""
+This module initializes the Flask application and defines the routes.
+
+It connects to the Cribl API to fetch configuration and generates a visualization
+of the pipeline using Graphviz.
+"""
+
 import sys
 import os
 
@@ -15,7 +22,14 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     """
-    Generates the graph and renders it in an HTML template.
+    Route to serve the main page with the generated graph.
+
+    It fetches the cached API client, generates the graph using `generate_graph`,
+    and renders the `index.html` template with the SVG content.
+    If an error occurs, it renders `error.html` with the error message.
+
+    Returns:
+        str: Rendered HTML content.
     """
     try:
         api_client = get_cached_api_client()
