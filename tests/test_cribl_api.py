@@ -7,10 +7,8 @@ class TestCriblAPI(unittest.TestCase):
     def setUp(self):
         self.base_url = "http://mock-cribl:9000"
         self.api = CriblAPI(base_url=self.base_url, token="mock-token")
-        # Mock the session object attached to the API instance
+        # Mock the session object directly since CriblAPI uses self.session.get/post
         self.api.session = MagicMock()
-        # Default headers to match what CriblAPI sets
-        self.api.session.headers = {"Content-Type": "application/json", "Authorization": "Bearer mock-token"}
 
     def test_get_worker_groups(self):
         # Setup mock response
