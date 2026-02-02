@@ -1,22 +1,55 @@
-# AGENTS DOCUMENT
+# Cribl Pipeline Visualizer Documentation for Agents
 
-## objective
-The task is to create a python program that will live in /opt/cribl, and look in ./default and ./local and find every yaml node in inputs.yml and outputs.yml that has disabled: false, and contains a connections section that defines a pipeline and the output node. Then once all the enabled nodes are gone through it generates a left to right graphviz dot file that details all these connections.
+This document provides instructions and context for AI agents working on this repository.
 
-## Tooling
-Python is the programming language used in this project, with additional libraries used as needed, like os and others.
+## Project Overview
 
-## Project Goals
-The eventual end goal is to turn this into a dockerized application that can be deployed to a observability cluster and visualize the logstream logic. This will involve
- - Retooling the app to use the cribl api instead file access to read the inputs and outputs and pipelines and whatnot.
-    - creating a function to access the cribl api and retrieve the necessary data.
-    - creating a function to generate the dot file from the retrieved data.
- - Creating a dockerfile to build the application into a docker image.
- - Creating a docker-compose file to deploy the application to a observability cluster.
- 
- ## Additional Documentation
- Additional documentation can be found in this folder, the files (./cribl_api_intro.md)[Cribl API Introduction] and (./cribl_api_update_configs.md)[Cribl API Update Configs]
- 
- Cribl Stream APIdocs are [./cribl-apidocs-4.15.1-1b453caa.yml](cribl-apidocs-4.15.1-1b453caa.yml)
- 
- Api Authentication docs are available [./cribl_api_authentication.md](HERE)
+The **Cribl Pipeline Visualizer** is a Flask application that visualizes Cribl Stream pipelines and their connections using Graphviz. It connects to the Cribl API to fetch configuration data (inputs, outputs, pipelines) and generates a dynamic graph.
+
+## Architecture
+
+*   **`app.py`**: The main Flask application. It defines the routes and serves the generated SVG. It uses a cached `CriblAPI` client.
+*   **`cribl_api.py`**: A client library for interacting with the Cribl API. It handles authentication and fetching worker groups, sources, destinations, and pipelines.
+*   **`graph_generator.py`**: Contains the logic to transform the data fetched from the API into a Graphviz `Digraph` object.
+*   **`templates/index.html`**: The HTML template used to display the generated SVG graph.
+
+## Environment & Dependencies
+
+*   **Python 3.9+**
+*   **Flask**: Web framework.
+*   **Graphviz**: Python library for graph creation. **Note:** The system-level `graphviz` package must also be installed (e.g., `apt-get install graphviz`).
+*   **Requests**: For making API calls.
+*   **Docker**: The application is containerized. `Dockerfile` and `docker-compose.yml` are provided.
+
+## Running the Application
+
+### Locally
+
+1.  Create a `.env` file based on `.env.example` and set your Cribl credentials (`CRIBL_BASE_URL`, `CRIBL_AUTH_TOKEN` or `CRIBL_USERNAME`/`CRIBL_PASSWORD`).
+2.  Install dependencies: `pip install -r requirements.txt`.
+3.  Run: `python app.py`.
+4.  Access at `http://localhost:5000`.
+
+### With Docker
+
+1.  Run `docker-compose up --build`.
+2.  Access at `http://localhost:8080`.
+
+## Testing
+
+Unit tests are located in the `tests/` directory.
+
+To run tests:
+```bash
+python -m unittest discover tests
+```
+
+*   `tests/test_graph_generator.py`: Tests the graph generation logic using mocked API responses.
+*   `tests/test_cribl_api.py`: Tests the API client methods (mocking `requests`).
+
+## Key Considerations for Agents
+
+*   **API Client**: The `CriblAPI` class handles authentication. If you modify it, ensure you handle token management and headers correctly.
+*   **Graphviz**: When modifying graph generation, remember that the `graphviz` library produces DOT source code. Ensure compatibility with standard Graphviz rendering.
+*   **Documentation**: Keep `README.md` and this file updated if you add new features or change the architecture.
+*   **Symlinks**: `GEMINI.md` and `QWEN.md` are symbolic links to this file and should be maintained as such.

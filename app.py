@@ -15,7 +15,14 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     """
-    Generates the graph and renders it in an HTML template.
+    Main route that generates the graph and renders it.
+
+    Returns:
+        str: Rendered HTML template with the graph SVG.
+
+    Renders:
+        index.html: If graph generation is successful.
+        error.html: If an exception occurs (e.g., API failure).
     """
     try:
         api_client = get_cached_api_client()

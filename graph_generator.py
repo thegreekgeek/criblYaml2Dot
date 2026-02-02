@@ -4,6 +4,15 @@ import graphviz
 def generate_graph(api_client):
     """
     Fetches Cribl configurations from the API and returns a graphviz Digraph object.
+
+    Args:
+        api_client (CriblAPI): An instance of the CriblAPI client.
+
+    Returns:
+        graphviz.Digraph: The generated graph showing inputs, outputs, and pipeline connections.
+
+    Raises:
+        Exception: If no worker groups are found.
     """
     dot = graphviz.Digraph("Cribl", comment="Cribl Configuration")
     dot.attr(rankdir="LR", splines="polylines", nodesep="0.5", ranksep="1.5")
