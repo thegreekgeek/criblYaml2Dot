@@ -26,9 +26,9 @@ The project has evolved from a local file-based script to a fully dockerized web
 
 ## Additional Documentation
 For detailed information on the Cribl API usage, refer to the local documentation files:
-- [Cribl API Introduction](./cribl_api_intro.md)
-- [Cribl API Update Configs](./cribl_api_update_configs.md)
-- [Cribl API Authentication](./cribl_api_authentication.md)
+- [Cribl API Introduction](./docs/cribl_api_intro.md)
+- [Cribl API Update Configs](./docs/cribl_api_update_configs.md)
+- [Cribl API Authentication](./docs/cribl_api_authentication.md)
 
 The OpenAPI definition is available at:
-- [cribl-apidocs-4.15.1-1b453caa.yml](./cribl-apidocs-4.15.1-1b453caa.yml)
+- [cribl-apidocs-4.15.1-1b453caa.yml](./docs/cribl-apidocs-4.15.1-1b453caa.yml)

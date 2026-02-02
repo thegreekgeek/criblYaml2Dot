@@ -99,10 +99,10 @@ python -m unittest discover tests
 
 This repository includes local copies of Cribl API documentation for reference:
 
-*   [Cribl API Introduction](./cribl_api_intro.md)
-*   [Authentication](./cribl_api_authentication.md)
-*   [Update Configurations](./cribl_api_update_configs.md)
-*   [OpenAPI Definition](./cribl-apidocs-4.15.1-1b453caa.yml)
+*   [Cribl API Introduction](./docs/cribl_api_intro.md)
+*   [Authentication](./docs/cribl_api_authentication.md)
+*   [Update Configurations](./docs/cribl_api_update_configs.md)
+*   [OpenAPI Definition](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
 
 ## Agents Documentation
 
