@@ -1,22 +1,34 @@
 # AGENTS DOCUMENT
 
-## objective
-The task is to create a python program that will live in /opt/cribl, and look in ./default and ./local and find every yaml node in inputs.yml and outputs.yml that has disabled: false, and contains a connections section that defines a pipeline and the output node. Then once all the enabled nodes are gone through it generates a left to right graphviz dot file that details all these connections.
+## Objective
+The current objective is to maintain and enhance a Python-based Flask application that visualizes Cribl Stream pipelines. The application retrieves configuration data (inputs, outputs, and pipeline connections) from the Cribl API and generates a Graphviz visualization.
 
 ## Tooling
-Python is the programming language used in this project, with additional libraries used as needed, like os and others.
+- **Python 3.9+**: The core programming language.
+- **Flask**: Web framework used to serve the visualization.
+- **Graphviz**: Used for generating the pipeline graph.
+- **Requests**: For interacting with the Cribl API.
+- **Docker & Docker Compose**: For containerizing and deploying the application.
 
-## Project Goals
-The eventual end goal is to turn this into a dockerized application that can be deployed to a observability cluster and visualize the logstream logic. This will involve
- - Retooling the app to use the cribl api instead file access to read the inputs and outputs and pipelines and whatnot.
-    - creating a function to access the cribl api and retrieve the necessary data.
-    - creating a function to generate the dot file from the retrieved data.
- - Creating a dockerfile to build the application into a docker image.
- - Creating a docker-compose file to deploy the application to a observability cluster.
- 
- ## Additional Documentation
- Additional documentation can be found in this folder, the files (./cribl_api_intro.md)[Cribl API Introduction] and (./cribl_api_update_configs.md)[Cribl API Update Configs]
- 
- Cribl Stream APIdocs are [./cribl-apidocs-4.15.1-1b453caa.yml](cribl-apidocs-4.15.1-1b453caa.yml)
- 
- Api Authentication docs are available [./cribl_api_authentication.md](HERE)
+## Project Structure & Goals
+The project has evolved from a local file-based script to a fully dockerized web application interacting with the Cribl API.
+
+### Current Features
+- **API Integration**: `cribl_api.py` handles authentication and data fetching from Cribl Stream.
+- **Graph Generation**: `graph_generator.py` transforms the API data into a DOT format graph.
+- **Web Interface**: `app.py` serves the generated graph as an SVG.
+- **Containerization**: The app is dockerized and can be deployed via `docker-compose`.
+
+### Future Goals / Maintenance
+- Maintain API compatibility with newer Cribl Stream versions.
+- Enhance visualization features (e.g., more detailed node information, interactive graphs).
+- Ensure robust error handling and logging.
+
+## Additional Documentation
+For detailed information on the Cribl API usage, refer to the local documentation files:
+- [Cribl API Introduction](./docs/cribl_api_intro.md)
+- [Cribl API Update Configs](./docs/cribl_api_update_configs.md)
+- [Cribl API Authentication](./docs/cribl_api_authentication.md)
+
+The OpenAPI definition is available at:
+- [cribl-apidocs-4.15.1-1b453caa.yml](./docs/cribl-apidocs-4.15.1-1b453caa.yml)

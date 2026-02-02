@@ -26,60 +26,53 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 *   `tests/`: Unit tests for the application.
 *   `AGENTS.md`: Documentation for AI agents working on this repo.
 
-## Installation
+## Installation & Usage
 
-1.  Clone the repository:
-    ```bash
-    git clone <repository-url>
-    cd <repository-directory>
-    ```
+### 1. Configuration
 
-2.  Install Python dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-## Configuration
-
-The application is configured using environment variables:
+The application is configured using environment variables. You can set these in your shell or create a `.env` file (see `.env.example`).
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `CRIBL_BASE_URL` | The base URL of your Cribl Stream API. | `http://localhost:9000` |
-| `CRIBL_AUTH_TOKEN` | Your Cribl authentication token. | *(Empty)* |
-| `CRIBL_USERNAME` | Username for auth (if token not provided). | *(Empty)* |
-| `CRIBL_PASSWORD` | Password for auth (if token not provided). | *(Empty)* |
+| `CRIBL_AUTH_TOKEN` | Your Cribl authentication token (Recommended). | *(Empty)* |
+| `CRIBL_USERNAME` | Username for auth (used if token is missing). | *(Empty)* |
+| `CRIBL_PASSWORD` | Password for auth (used if token is missing). | *(Empty)* |
 
-## Usage
+**Authentication Note**: If `CRIBL_AUTH_TOKEN` is provided, it takes precedence. Otherwise, the application attempts to log in using `CRIBL_USERNAME` and `CRIBL_PASSWORD`.
 
-### Running Locally
+### 2. Running Locally
 
-1.  Set the environment variables (example):
+1.  Clone the repository and install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2.  Ensure Graphviz is installed on your system (see Prerequisites).
+
+3.  Set your environment variables (e.g., in a `.env` file):
     ```bash
     export CRIBL_BASE_URL="http://my-cribl-instance:9000"
-    export CRIBL_USERNAME="admin"
-    export CRIBL_PASSWORD="password"
-    # OR
     export CRIBL_AUTH_TOKEN="your-token"
     ```
 
-2.  Run the application:
+4.  Run the application:
     ```bash
     python app.py
     ```
 
-3.  Open your browser and navigate to `http://localhost:5000`.
+5.  Access the application at **`http://localhost:5000`**.
 
-### Running with Docker
+### 3. Running with Docker
 
 1.  Build and start the container using Docker Compose:
     ```bash
     docker-compose up --build
     ```
 
-    *Note: You may need to edit `docker-compose.yml` to set your specific environment variables.*
+    *Note: The `docker-compose.yml` file maps port 5000 inside the container to port **8080** on your host.*
 
-2.  Access the application at `http://localhost:8080`.
+2.  Access the application at **`http://localhost:8080`**.
 
 ## Testing
 
@@ -88,6 +81,28 @@ To run the unit tests:
 ```bash
 python -m unittest discover tests
 ```
+
+## Troubleshooting
+
+*   **Graphviz Executable Not Found**:
+    *   Ensure Graphviz is installed on your system (`dot -V`).
+    *   If running locally, make sure the `bin` directory of Graphviz is in your system's `PATH`.
+
+*   **401 Unauthorized**:
+    *   Check your `CRIBL_AUTH_TOKEN` or username/password combinations.
+    *   Ensure the `CRIBL_BASE_URL` is reachable and correct.
+
+*   **Connection Errors**:
+    *   If running in Docker and connecting to a Cribl instance on the host machine, you may need to use `http://host.docker.internal:9000` as the `CRIBL_BASE_URL`.
+
+## API Reference
+
+This repository includes local copies of Cribl API documentation for reference:
+
+*   [Cribl API Introduction](./docs/cribl_api_intro.md)
+*   [Authentication](./docs/cribl_api_authentication.md)
+*   [Update Configurations](./docs/cribl_api_update_configs.md)
+*   [OpenAPI Definition](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
 
 ## Agents Documentation
 
