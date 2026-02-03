@@ -71,6 +71,7 @@ The application is configured using environment variables. You can set these in 
     ```
 
     *Note: The `docker-compose.yml` file maps port 5000 inside the container to port **8080** on your host.*
+    *Note: The default `CRIBL_BASE_URL` in Docker is set to `http://host.docker.internal:9000` to allow connection to the host machine.*
 
 2.  Access the application at **`http://localhost:8080`**.
 
@@ -93,7 +94,8 @@ python -m unittest discover tests
     *   Ensure the `CRIBL_BASE_URL` is reachable and correct.
 
 *   **Connection Errors**:
-    *   If running in Docker and connecting to a Cribl instance on the host machine, you may need to use `http://host.docker.internal:9000` as the `CRIBL_BASE_URL`.
+    *   If running in Docker and connecting to a Cribl instance on the host machine, the default `CRIBL_BASE_URL` is `http://host.docker.internal:9000`.
+    *   **Linux Users**: `host.docker.internal` may not work out-of-the-box. You might need to add `extra_hosts` to your `docker-compose.yml` or use the host's IP address directly.
 
 ## API Reference
 
