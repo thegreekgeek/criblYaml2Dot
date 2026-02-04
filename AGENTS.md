@@ -47,11 +47,14 @@ python -m unittest discover tests
 *   `tests/test_graph_generator.py`: Tests the graph generation logic using mocked API responses.
 *   `tests/test_cribl_api.py`: Tests the API client methods (mocking `requests`).
 
+**Note**: `tests/test_app.py` has been removed. Testing is consolidated in the files above.
+
 ## Key Considerations for Agents
 
 *   **API Client**: The `CriblAPI` class handles authentication. If you modify it, ensure you handle token management and headers correctly.
 *   **Graphviz**: When modifying graph generation, remember that the `graphviz` library produces DOT source code. Ensure compatibility with standard Graphviz rendering.
 *   **Documentation**: Keep `README.md` and this file updated if you add new features or change the architecture.
+*   **Contribution**: Refer to `CONTRIBUTING.md` for workflow and guidelines.
 *   **Symlinks**: `GEMINI.md` and `QWEN.md` are symbolic links to this file and should be maintained as such.
 # AGENTS DOCUMENT
 
