@@ -52,6 +52,8 @@ python -m unittest discover tests
 *   **API Client**: The `CriblAPI` class handles authentication. If you modify it, ensure you handle token management and headers correctly.
 *   **Graphviz**: When modifying graph generation, remember that the `graphviz` library produces DOT source code. Ensure compatibility with standard Graphviz rendering.
 *   **Documentation**: Keep `README.md` and this file updated if you add new features or change the architecture.
+*   **Code Reference**: Refer to [docs/CODE_REFERENCE.md](docs/CODE_REFERENCE.md) for detailed module documentation.
+*   **Contribution Guidelines**: Follow [CONTRIBUTING.md](CONTRIBUTING.md) for development workflows.
 *   **Symlinks**: `GEMINI.md` and `QWEN.md` are symbolic links to this file and should be maintained as such.
 # AGENTS DOCUMENT
 
