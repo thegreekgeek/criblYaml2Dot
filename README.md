@@ -15,7 +15,7 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 *   **Graphviz** (system dependency, required for rendering graphs)
     *   Ubuntu/Debian: `sudo apt-get install graphviz`
     *   macOS: `brew install graphviz`
-*   **Cribl Stream**: A running instance of Cribl Stream (distributed or single instance).
+*   **Cribl Stream**: A running instance of Cribl Stream (Distributed deployment or Single Instance acting as Leader).
 
 ## Project Structure
 
@@ -25,6 +25,8 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 *   `templates/`: HTML templates for the web interface.
 *   `tests/`: Unit tests for the application.
 *   `AGENTS.md`: Documentation for AI agents working on this repo.
+
+For detailed documentation of the codebase, see [Code Reference](docs/CODE_REFERENCE.md).
 
 ## Installation & Usage
 
@@ -103,6 +105,10 @@ This repository includes local copies of Cribl API documentation for reference:
 *   [Authentication](./docs/cribl_api_authentication.md)
 *   [Update Configurations](./docs/cribl_api_update_configs.md)
 *   [OpenAPI Definition](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to get started, run tests, and submit pull requests.
 
 ## Agents Documentation
 
