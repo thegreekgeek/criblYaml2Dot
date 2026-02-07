@@ -95,14 +95,20 @@ python -m unittest discover tests
 *   **Connection Errors**:
     *   If running in Docker and connecting to a Cribl instance on the host machine, you may need to use `http://host.docker.internal:9000` as the `CRIBL_BASE_URL`.
 
-## API Reference
+## Documentation
 
-This repository includes local copies of Cribl API documentation for reference:
+This repository includes both internal code documentation and copies of Cribl API documentation:
 
-*   [Cribl API Introduction](./docs/cribl_api_intro.md)
-*   [Authentication](./docs/cribl_api_authentication.md)
-*   [Update Configurations](./docs/cribl_api_update_configs.md)
-*   [OpenAPI Definition](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
+*   **[Code Reference](./docs/CODE_REFERENCE.md)**: Detailed technical documentation of the application's modules and architecture.
+*   **Cribl API Reference**:
+    *   [Cribl API Introduction](./docs/cribl_api_intro.md)
+    *   [Authentication](./docs/cribl_api_authentication.md)
+    *   [Update Configurations](./docs/cribl_api_update_configs.md)
+    *   [OpenAPI Definition](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
+
+## Contributing
+
+We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on setting up your development environment, running tests, and submitting pull requests.
 
 ## Agents Documentation
 

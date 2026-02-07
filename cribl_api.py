@@ -6,6 +6,10 @@ from requests import Session
 class CriblAPI:
     """
     A client for interacting with the Cribl API.
+
+    This class handles authentication and token management, ensuring that
+    requests to the Cribl API are properly authorized. It provides methods
+    to fetch worker groups, inputs, outputs, and pipeline configurations.
     """
 
     def __init__(
