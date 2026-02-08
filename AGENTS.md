@@ -1,89 +1,81 @@
-# Cribl Pipeline Visualizer Documentation for Agents
+# Cribl Pipeline Visualizer: Agents Documentation
 
-This document provides instructions and context for AI agents working on this repository.
+This document provides instructions, context, and guidelines for AI agents working on this repository.
 
 ## Project Overview
 
-The **Cribl Pipeline Visualizer** is a Flask application that visualizes Cribl Stream pipelines and their connections using Graphviz. It connects to the Cribl API to fetch configuration data (inputs, outputs, pipelines) and generates a dynamic graph.
+The **Cribl Pipeline Visualizer** is a Flask application designed to visualize Cribl Stream pipelines and their connections. It dynamically generates a directed graph using Graphviz by fetching configuration data (inputs, outputs, and pipeline connections) directly from the Cribl API.
 
 ## Architecture
 
-*   **`app.py`**: The main Flask application. It defines the routes and serves the generated SVG. It uses a cached `CriblAPI` client.
-*   **`cribl_api.py`**: A client library for interacting with the Cribl API. It handles authentication and fetching worker groups, sources, destinations, and pipelines.
-*   **`graph_generator.py`**: Contains the logic to transform the data fetched from the API into a Graphviz `Digraph` object.
-*   **`templates/index.html`**: The HTML template used to display the generated SVG graph.
+The application is structured into three main components:
+
+*   **`app.py`**: The Flask web server. It handles HTTP requests, initializes the API client, and serves the rendered SVG graph to the user.
+*   **`cribl_api.py`**: The API client library. It manages authentication (token/login) and encapsulates all HTTP requests to the Cribl Stream API to fetch worker groups, sources, destinations, and pipelines.
+*   **`graph_generator.py`**: The visualization logic. It processes the data retrieved by the API client and constructs a Graphviz `Digraph` object representing the pipeline topology.
+
+For a detailed breakdown of classes and functions, refer to **[docs/CODE_REFERENCE.md](docs/CODE_REFERENCE.md)**.
 
 ## Environment & Dependencies
 
-*   **Python 3.9+**
-*   **Flask**: Web framework.
-*   **Graphviz**: Python library for graph creation. **Note:** The system-level `graphviz` package must also be installed (e.g., `apt-get install graphviz`).
-*   **Requests**: For making API calls.
-*   **Docker**: The application is containerized. `Dockerfile` and `docker-compose.yml` are provided.
+*   **Language**: Python 3.9+
+*   **Web Framework**: Flask
+*   **Visualization**: Graphviz (requires both the `graphviz` Python library and the system-level `graphviz` package).
+*   **HTTP Client**: Requests
+*   **Containerization**: Docker and Docker Compose.
 
 ## Running the Application
 
-### Locally
+### Local Development
 
-1.  Create a `.env` file based on `.env.example` and set your Cribl credentials (`CRIBL_BASE_URL`, `CRIBL_AUTH_TOKEN` or `CRIBL_USERNAME`/`CRIBL_PASSWORD`).
-2.  Install dependencies: `pip install -r requirements.txt`.
-3.  Run: `python app.py`.
-4.  Access at `http://localhost:5000`.
+1.  **Configuration**: Create a `.env` file based on `.env.example`.
+    *   Set `CRIBL_BASE_URL` (default: `http://localhost:9000`).
+    *   Set authentication credentials: `CRIBL_AUTH_TOKEN` (preferred) or `CRIBL_USERNAME` and `CRIBL_PASSWORD`.
+2.  **Dependencies**: Install Python packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
+    *Ensure `graphviz` is installed on your OS (e.g., `apt-get install graphviz`).*
+3.  **Run**:
+    ```bash
+    python app.py
+    ```
+4.  **Access**: Open `http://localhost:5000` in your browser.
 
-### With Docker
+### Docker Deployment
 
-1.  Run `docker-compose up --build`.
-2.  Access at `http://localhost:8080`.
+1.  **Build & Run**:
+    ```bash
+    docker-compose up --build
+    ```
+2.  **Access**: Open `http://localhost:8080` in your browser (mapped from container port 5000).
 
 ## Testing
 
 Unit tests are located in the `tests/` directory.
 
-To run tests:
-```bash
-python -m unittest discover tests
-```
-
-*   `tests/test_graph_generator.py`: Tests the graph generation logic using mocked API responses.
-*   `tests/test_cribl_api.py`: Tests the API client methods (mocking `requests`).
+*   **Command**:
+    ```bash
+    python -m unittest discover tests
+    ```
+*   **Scope**:
+    *   `tests/test_graph_generator.py`: Verifies graph structure and logic using mocked data.
+    *   `tests/test_cribl_api.py`: Verifies API client methods and authentication handling (mocks `requests`).
 
 ## Key Considerations for Agents
 
-*   **API Client**: The `CriblAPI` class handles authentication. If you modify it, ensure you handle token management and headers correctly.
-*   **Graphviz**: When modifying graph generation, remember that the `graphviz` library produces DOT source code. Ensure compatibility with standard Graphviz rendering.
-*   **Documentation**: Keep `README.md` and this file updated if you add new features or change the architecture.
-*   **Symlinks**: `GEMINI.md` and `QWEN.md` are symbolic links to this file and should be maintained as such.
-# AGENTS DOCUMENT
+*   **API Client**: The `CriblAPI` class handles authentication state. When modifying it, ensure token management (Bearer prefix) and error handling (401 Unauthorized) are robust.
+*   **Graphviz Compatibility**: The application generates DOT source code. Ensure any changes to graph properties are compatible with standard Graphviz rendering engines.
+*   **Documentation Maintenance**:
+    *   Update `docs/CODE_REFERENCE.md` if you modify function signatures or class structures.
+    *   Update this file if you change the architecture or build process.
+*   **Symbolic Links**: `GEMINI.md` and `QWEN.md` are symbolic links to this file (`AGENTS.md`) and **must be maintained** as such. Do not replace them with regular files.
 
-## Objective
-The current objective is to maintain and enhance a Python-based Flask application that visualizes Cribl Stream pipelines. The application retrieves configuration data (inputs, outputs, and pipeline connections) from the Cribl API and generates a Graphviz visualization.
+## Additional Resources
 
-## Tooling
-- **Python 3.9+**: The core programming language.
-- **Flask**: Web framework used to serve the visualization.
-- **Graphviz**: Used for generating the pipeline graph.
-- **Requests**: For interacting with the Cribl API.
-- **Docker & Docker Compose**: For containerizing and deploying the application.
-
-## Project Structure & Goals
-The project has evolved from a local file-based script to a fully dockerized web application interacting with the Cribl API.
-
-### Current Features
-- **API Integration**: `cribl_api.py` handles authentication and data fetching from Cribl Stream.
-- **Graph Generation**: `graph_generator.py` transforms the API data into a DOT format graph.
-- **Web Interface**: `app.py` serves the generated graph as an SVG.
-- **Containerization**: The app is dockerized and can be deployed via `docker-compose`.
-
-### Future Goals / Maintenance
-- Maintain API compatibility with newer Cribl Stream versions.
-- Enhance visualization features (e.g., more detailed node information, interactive graphs).
-- Ensure robust error handling and logging.
-
-## Additional Documentation
-For detailed information on the Cribl API usage, refer to the local documentation files:
-- [Cribl API Introduction](./docs/cribl_api_intro.md)
-- [Cribl API Update Configs](./docs/cribl_api_update_configs.md)
-- [Cribl API Authentication](./docs/cribl_api_authentication.md)
-
-The OpenAPI definition is available at:
-- [cribl-apidocs-4.15.1-1b453caa.yml](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
+*   **Internal Code Reference**: [docs/CODE_REFERENCE.md](docs/CODE_REFERENCE.md)
+*   **Cribl API Docs**:
+    *   [Introduction](./docs/cribl_api_intro.md)
+    *   [Authentication](./docs/cribl_api_authentication.md)
+    *   [Update Configs](./docs/cribl_api_update_configs.md)
+    *   [OpenAPI Spec](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
