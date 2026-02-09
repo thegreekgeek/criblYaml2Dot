@@ -99,6 +99,7 @@ python -m unittest discover tests
 
 This repository includes local copies of Cribl API documentation for reference:
 
+*   [Code Reference](./docs/CODE_REFERENCE.md)
 *   [Cribl API Introduction](./docs/cribl_api_intro.md)
 *   [Authentication](./docs/cribl_api_authentication.md)
 *   [Update Configurations](./docs/cribl_api_update_configs.md)
