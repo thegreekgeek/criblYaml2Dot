@@ -38,6 +38,7 @@ The application is configured using environment variables. You can set these in 
 | `CRIBL_AUTH_TOKEN` | Your Cribl authentication token (Recommended). | *(Empty)* |
 | `CRIBL_USERNAME` | Username for auth (used if token is missing). | *(Empty)* |
 | `CRIBL_PASSWORD` | Password for auth (used if token is missing). | *(Empty)* |
+| `FLASK_DEBUG`    | Enable Flask debug mode (`True` or `False`).  | `False`    |
 
 **Authentication Note**: If `CRIBL_AUTH_TOKEN` is provided, it takes precedence. Otherwise, the application attempts to log in using `CRIBL_USERNAME` and `CRIBL_PASSWORD`.
 
@@ -95,7 +96,15 @@ python -m unittest discover tests
 *   **Connection Errors**:
     *   If running in Docker and connecting to a Cribl instance on the host machine, you may need to use `http://host.docker.internal:9000` as the `CRIBL_BASE_URL`.
 
-## API Reference
+## Documentation
+
+### Code Reference
+
+For detailed technical documentation of the internal modules (`app.py`, `cribl_api.py`, `graph_generator.py`), please refer to:
+
+*   [Code Reference](./docs/CODE_REFERENCE.md)
+
+### Cribl API Reference
 
 This repository includes local copies of Cribl API documentation for reference:
 
