@@ -51,7 +51,7 @@ python -m unittest discover tests
 
 *   **API Client**: The `CriblAPI` class handles authentication. If you modify it, ensure you handle token management and headers correctly.
 *   **Graphviz**: When modifying graph generation, remember that the `graphviz` library produces DOT source code. Ensure compatibility with standard Graphviz rendering.
-*   **Documentation**: Keep `README.md` and this file updated if you add new features or change the architecture.
+*   **Documentation**: Keep `README.md` and this file updated if you add new features or change the architecture. Refer to `docs/CODE_REFERENCE.md` for technical details.
 *   **Symlinks**: `GEMINI.md` and `QWEN.md` are symbolic links to this file and should be maintained as such.
 # AGENTS DOCUMENT
 
@@ -80,6 +80,12 @@ The project has evolved from a local file-based script to a fully dockerized web
 - Ensure robust error handling and logging.
 
 ## Additional Documentation
+
+### Internal Code Reference
+- [Code Reference](./docs/CODE_REFERENCE.md): Technical documentation for `app.py`, `cribl_api.py`, and `graph_generator.py`.
+- [Contributing Guidelines](./CONTRIBUTING.md): Instructions for contributing to the project.
+
+### External Cribl API Reference
 For detailed information on the Cribl API usage, refer to the local documentation files:
 - [Cribl API Introduction](./docs/cribl_api_intro.md)
 - [Cribl API Update Configs](./docs/cribl_api_update_configs.md)
