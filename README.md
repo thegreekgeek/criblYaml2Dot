@@ -24,6 +24,7 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 *   `graph_generator.py`: Logic to transform API data into a Graphviz graph.
 *   `templates/`: HTML templates for the web interface.
 *   `tests/`: Unit tests for the application.
+*   `docs/CODE_REFERENCE.md`: Detailed technical documentation for the codebase.
 *   `AGENTS.md`: Documentation for AI agents working on this repo.
 
 ## Installation & Usage
@@ -94,6 +95,10 @@ python -m unittest discover tests
 
 *   **Connection Errors**:
     *   If running in Docker and connecting to a Cribl instance on the host machine, you may need to use `http://host.docker.internal:9000` as the `CRIBL_BASE_URL`.
+
+## Documentation
+
+*   [Code Reference](./docs/CODE_REFERENCE.md): Detailed technical documentation of the codebase.
 
 ## API Reference
 
