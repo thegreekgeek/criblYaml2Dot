@@ -104,6 +104,14 @@ This repository includes local copies of Cribl API documentation for reference:
 *   [Update Configurations](./docs/cribl_api_update_configs.md)
 *   [OpenAPI Definition](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
 
+## Documentation
+
+For detailed technical documentation of the codebase, including class references and logic, please see [Code Reference](docs/CODE_REFERENCE.md).
+
+## Contributing
+
+We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on how to set up your development environment, run tests, and submit pull requests.
+
 ## Agents Documentation
 
 For instructions and context relevant to AI agents working on this repository, please refer to [AGENTS.md](AGENTS.md).

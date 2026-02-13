@@ -80,6 +80,11 @@ The project has evolved from a local file-based script to a fully dockerized web
 - Ensure robust error handling and logging.
 
 ## Additional Documentation
+
+For internal code documentation and contribution guidelines:
+- [Code Reference](./docs/CODE_REFERENCE.md)
+- [Contributing Guidelines](./CONTRIBUTING.md)
+
 For detailed information on the Cribl API usage, refer to the local documentation files:
 - [Cribl API Introduction](./docs/cribl_api_intro.md)
 - [Cribl API Update Configs](./docs/cribl_api_update_configs.md)
