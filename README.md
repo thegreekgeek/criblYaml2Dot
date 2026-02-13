@@ -34,7 +34,7 @@ The application is configured using environment variables. You can set these in 
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `CRIBL_BASE_URL` | The base URL of your Cribl Stream API. | `http://localhost:9000` |
+| `CRIBL_BASE_URL` | The base URL of your Cribl Stream API. | `http://localhost:9000` (Local)<br>`http://host.docker.internal:9000` (Docker) |
 | `CRIBL_AUTH_TOKEN` | Your Cribl authentication token (Recommended). | *(Empty)* |
 | `CRIBL_USERNAME` | Username for auth (used if token is missing). | *(Empty)* |
 | `CRIBL_PASSWORD` | Password for auth (used if token is missing). | *(Empty)* |
@@ -70,7 +70,7 @@ The application is configured using environment variables. You can set these in 
     docker-compose up --build
     ```
 
-    *Note: The `docker-compose.yml` file maps port 5000 inside the container to port **8080** on your host.*
+    *Note: The `docker-compose.yml` file maps port 5000 inside the container to port **8080** on your host. It also sets `CRIBL_BASE_URL` to `http://host.docker.internal:9000` by default to allow connection to the host machine.*
 
 2.  Access the application at **`http://localhost:8080`**.
 

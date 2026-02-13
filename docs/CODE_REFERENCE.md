@@ -19,7 +19,7 @@ The application relies on the following environment variables for configuration.
 | `CRIBL_AUTH_TOKEN` | Authentication token for the Cribl API. If provided, it takes precedence over username/password. | `None` |
 | `CRIBL_USERNAME` | Username for Cribl API authentication. Used if `CRIBL_AUTH_TOKEN` is not set. | `None` |
 | `CRIBL_PASSWORD` | Password for Cribl API authentication. Used if `CRIBL_AUTH_TOKEN` is not set. | `None` |
-| `FLASK_DEBUG` | Enables Flask debug mode if set to `true`. | `False` |
+| `FLASK_DEBUG` | Enables Flask debug mode if set to `"true"` (case-insensitive). | `False` |
 
 ## CriblAPI
 
@@ -54,9 +54,12 @@ Retrieves all output destinations for a specific worker group (`group_id`). It q
 #### `get_pipelines(group_id)`
 Retrieves all pipelines for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/pipelines`.
 
+#### `get_cached_api_client()`
+A helper function that returns a cached `CriblAPI` client instance. It initializes the client using environment variables (`CRIBL_BASE_URL`, `CRIBL_AUTH_TOKEN`, etc.) if it hasn't been created yet. This prevents re-authentication on every request.
+
 ### Helper Methods
--   `_get(endpoint)`: Performs a GET request to the specified endpoint, handling common errors like 401 Unauthorized.
--   `_post(endpoint, payload)`: Performs a POST request to the specified endpoint.
+-   `_get(endpoint)`: Performs a GET request to the specified endpoint. It handles common errors like 401 Unauthorized and JSON decoding failures.
+-   `_post(endpoint, payload)`: Performs a POST request to the specified endpoint. Like `_get`, it handles HTTP errors and JSON decoding issues.
 
 ## Graph Generator
 
@@ -70,13 +73,18 @@ This function orchestrates the creation of the Graphviz visualization.
 -   `api_client`: An instance of `CriblAPI`.
 
 **Process:**
-1.  **Initialize Graph**: Creates a `graphviz.Digraph` object with specific attributes (rankdir="LR", splines="polylines").
-2.  **Fetch Worker Groups**: Calls `api_client.get_worker_groups()`. If no groups are found, it raises an exception.
+1.  **Initialize Graph**: Creates a `graphviz.Digraph` object with specific attributes (`rankdir="LR"`, `splines="polylines"`, `nodesep="0.5"`, `ranksep="1.5"`).
+2.  **Fetch Worker Groups**: Calls `api_client.get_worker_groups()`. It specifically iterates over the items in the response (`.get("items", [])`). If no groups are found, it raises an exception.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs.
+        -   Skips any input where `disabled` is `True`.
+        -   Creates a "box" node styled with `lightblue`.
+        -   If a `description` exists, it is appended to the node label.
+    -   **Outputs**: Iterates through outputs.
+        -   Creates a "box" node styled with `lightgreen`.
+        -   If a `description` exists, it is appended to the node label.
 6.  **Create Edges**:
     -   Iterates through inputs again.
     -   Checks the `connections` property of each input.
