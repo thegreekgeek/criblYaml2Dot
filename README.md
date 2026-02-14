@@ -9,6 +9,13 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 *   **Visual Clarity**: Uses Graphviz to layout nodes (inputs, outputs) and edges (pipelines) clearly.
 *   **Dockerized**: Easy to deploy using Docker and Docker Compose.
 
+## How It Works
+
+1.  **Connect**: The application connects to your Cribl Stream API using provided credentials.
+2.  **Fetch**: It retrieves worker groups, inputs, and outputs configuration.
+3.  **Generate**: A graph is constructed in memory, mapping inputs to outputs via their configured pipelines.
+4.  **Render**: Graphviz transforms this structure into an SVG image, which is displayed in your browser.
+
 ## Prerequisites
 
 *   **Python 3.9+** (for local development)
@@ -106,7 +113,8 @@ This repository includes local copies of Cribl API documentation for reference:
 
 ## Documentation
 
-For detailed technical documentation of the codebase, including class references and logic, please see [Code Reference](docs/CODE_REFERENCE.md).
+*   [**Architecture**](docs/ARCHITECTURE.md): High-level overview of the system design and data flow.
+*   [**Code Reference**](docs/CODE_REFERENCE.md): Detailed technical documentation of the codebase.
 
 ## Contributing
 
