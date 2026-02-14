@@ -81,7 +81,8 @@ The project has evolved from a local file-based script to a fully dockerized web
 
 ## Additional Documentation
 
-For internal code documentation and contribution guidelines:
+For system architecture and internal code documentation:
+- [Architecture](./docs/ARCHITECTURE.md)
 - [Code Reference](./docs/CODE_REFERENCE.md)
 - [Contributing Guidelines](./CONTRIBUTING.md)
 
