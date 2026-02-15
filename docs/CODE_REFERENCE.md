@@ -53,6 +53,7 @@ Retrieves all output destinations for a specific worker group (`group_id`). It q
 
 #### `get_pipelines(group_id)`
 Retrieves all pipelines for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/pipelines`.
+*Note: This method is available in the client but is not currently used by the graph generator logic, which derives pipeline names directly from input connections.*
 
 ### Helper Methods
 -   `_get(endpoint)`: Performs a GET request to the specified endpoint, handling common errors like 401 Unauthorized.
@@ -76,12 +77,14 @@ This function orchestrates the creation of the Graphviz visualization.
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
     -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
+        -   If a `description` field is present in the input configuration, it is appended to the node label.
     -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+        -   If a `description` field is present in the output configuration, it is appended to the node label.
 6.  **Create Edges**:
     -   Iterates through inputs again.
     -   Checks the `connections` property of each input.
     -   For each connection, if an `output` is specified, it draws an edge from the input to the output.
-    -   The edge is labeled with the pipeline name (defaulting to "passthru").
+    -   The edge is labeled with the pipeline name found in the connection object (defaulting to "passthru").
 
 **Returns:**
 -   A `graphviz.Digraph` object representing the pipeline configuration.
