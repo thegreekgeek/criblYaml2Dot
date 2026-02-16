@@ -40,7 +40,7 @@ The constructor initializes a `requests.Session` object to persist headers (like
 ### Methods
 
 #### `login(username, password)`
-Authenticates with the Cribl API using the provided credentials. It updates the session's `Authorization` header with the retrieved token.
+Authenticates with the Cribl API using the provided credentials. It updates the session's `Authorization` header with the retrieved token, ensuring all subsequent requests made with this client are authenticated.
 
 #### `get_worker_groups()`
 Retrieves all worker groups from the API endpoint `/api/v1/master/groups`.
@@ -75,8 +75,8 @@ This function orchestrates the creation of the Graphviz visualization.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`. The node label includes the input `id` and, if available, the `description`.
+    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`. The node label includes the output `id` and, if available, the `description`.
 6.  **Create Edges**:
     -   Iterates through inputs again.
     -   Checks the `connections` property of each input.
