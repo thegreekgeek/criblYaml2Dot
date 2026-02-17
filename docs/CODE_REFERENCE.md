@@ -75,10 +75,10 @@ This function orchestrates the creation of the Graphviz visualization.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`. If a `description` is available, it is appended to the label.
+    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`. If a `description` is available, it is appended to the label.
 6.  **Create Edges**:
-    -   Iterates through inputs again.
+    -   Iterates through inputs again, skipping disabled ones.
     -   Checks the `connections` property of each input.
     -   For each connection, if an `output` is specified, it draws an edge from the input to the output.
     -   The edge is labeled with the pipeline name (defaulting to "passthru").
