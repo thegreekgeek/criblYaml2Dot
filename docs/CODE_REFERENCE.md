@@ -8,6 +8,7 @@ This document provides detailed technical documentation for the Cribl Pipeline V
 - [CriblAPI](#criblapi)
 - [Graph Generator](#graph-generator)
 - [Application (`app.py`)](#application-apppy)
+- [Templates](#templates)
 
 ## Environment Variables
 
@@ -53,6 +54,7 @@ Retrieves all output destinations for a specific worker group (`group_id`). It q
 
 #### `get_pipelines(group_id)`
 Retrieves all pipelines for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/pipelines`.
+*Note: This method is available for future enhancements but is not currently used by the graph generator, which derives pipeline names from input connections.*
 
 ### Helper Methods
 -   `_get(endpoint)`: Performs a GET request to the specified endpoint, handling common errors like 401 Unauthorized.
@@ -104,3 +106,13 @@ If an exception occurs (e.g., API error), it renders `error.html` with the error
 ### Caching
 
 The application uses a simple global variable `_cached_api_client` to cache the `CriblAPI` instance. This prevents re-authentication on every request. The cache is initialized via `get_cached_api_client()`, which reads environment variables and creates a new client if one doesn't exist.
+
+## Templates
+
+The application uses Jinja2 templates located in the `templates/` directory.
+
+### `index.html`
+The main dashboard template. It receives the `svg_content` variable and renders the generated graph within a responsive container.
+
+### `error.html`
+Displayed when an unhandled exception occurs. It takes an `error_message` variable to display the details of the error to the user.
