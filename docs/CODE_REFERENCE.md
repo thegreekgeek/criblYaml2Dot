@@ -33,14 +33,16 @@ CriblAPI(base_url="http://localhost:9000", username=None, password=None, token=N
 
 -   **`base_url`**: The URL of the Cribl Stream instance.
 -   **`username`**, **`password`**: Credentials for authentication.
--   **`token`**: An optional existing bearer token.
+-   **`token`**: An existing bearer token.
 
-The constructor initializes a `requests.Session` object to persist headers (like `Content-Type` and `Authorization`) across requests. If a token is provided, it is used immediately. If username/password are provided but no token, the `login` method is called.
+The constructor initializes a `requests.Session` object to persist headers (like `Content-Type` and `Authorization`) across requests.
+- If a `token` is provided, it is set in the `Authorization` header (prepended with `Bearer ` if missing).
+- If `username` and `password` are provided, the `login()` method is called immediately.
 
 ### Methods
 
 #### `login(username, password)`
-Authenticates with the Cribl API using the provided credentials. It updates the session's `Authorization` header with the retrieved token.
+Authenticates with the Cribl API using the provided credentials via `/api/v1/auth/login`. It retrieves the token from the response and updates the session's `Authorization` header.
 
 #### `get_worker_groups()`
 Retrieves all worker groups from the API endpoint `/api/v1/master/groups`.
@@ -54,9 +56,22 @@ Retrieves all output destinations for a specific worker group (`group_id`). It q
 #### `get_pipelines(group_id)`
 Retrieves all pipelines for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/pipelines`.
 
-### Helper Methods
--   `_get(endpoint)`: Performs a GET request to the specified endpoint, handling common errors like 401 Unauthorized.
--   `_post(endpoint, payload)`: Performs a POST request to the specified endpoint.
+### Internal Helpers
+
+#### `_get(endpoint)` & `_post(endpoint, payload)`
+These internal methods wrap `requests.Session.get` and `requests.Session.post`. They include:
+-   **Error Handling**: Catches `requests.exceptions.HTTPError` and `requests.exceptions.RequestException`.
+-   **401 Unauthorized**: Specifically catches 401 errors to print a diagnostic message suggesting credential checks.
+-   **JSON Decoding**: Decodes the JSON response, handling decode errors gracefully.
+-   **Raise for Status**: Calls `response.raise_for_status()` to raise exceptions for HTTP error codes.
+
+### Factory Functions
+
+#### `get_api_client_from_env()`
+Reads environment variables (`CRIBL_BASE_URL`, `CRIBL_AUTH_TOKEN`, `CRIBL_USERNAME`, `CRIBL_PASSWORD`) and instantiates a new `CriblAPI` client.
+
+#### `get_cached_api_client()`
+Maintains a global singleton instance (`_cached_api_client`) of the `CriblAPI` client. It calls `get_api_client_from_env()` only if the client hasn't been initialized yet. This ensures the application reuses the same authenticated session.
 
 ## Graph Generator
 
@@ -70,17 +85,21 @@ This function orchestrates the creation of the Graphviz visualization.
 -   `api_client`: An instance of `CriblAPI`.
 
 **Process:**
-1.  **Initialize Graph**: Creates a `graphviz.Digraph` object with specific attributes (rankdir="LR", splines="polylines").
+1.  **Initialize Graph**: Creates a `graphviz.Digraph` object with specific attributes (`rankdir="LR"`, `splines="polylines"`).
 2.  **Fetch Worker Groups**: Calls `api_client.get_worker_groups()`. If no groups are found, it raises an exception.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`.
+        -   **Style**: `shape="box"`, `style="rounded,filled"`, `fillcolor="lightblue"`.
+        -   **Label**: ID + Description (if present).
+    -   **Outputs**: Iterates through outputs.
+        -   **Style**: `shape="box"`, `style="rounded,filled"`, `fillcolor="lightgreen"`.
+        -   **Label**: ID + Description (if present).
 6.  **Create Edges**:
-    -   Iterates through inputs again.
+    -   Iterates through enabled inputs again.
     -   Checks the `connections` property of each input.
-    -   For each connection, if an `output` is specified, it draws an edge from the input to the output.
+    -   For each connection, if an `output` is specified, it draws an edge from the input ID to the output ID.
     -   The edge is labeled with the pipeline name (defaulting to "passthru").
 
 **Returns:**
@@ -94,13 +113,12 @@ The `app.py` file is the entry point for the Flask web application.
 
 #### `/` (Index)
 The main route.
-1.  Retrieves a cached API client instance using `get_cached_api_client()`.
+1.  Retrieves the API client via `get_cached_api_client()`.
 2.  Calls `generate_graph(api_client)` to build the graph.
 3.  Converts the graph to SVG format using `dot.pipe(format="svg")`.
-4.  Renders `index.html` with the SVG content.
+4.  Renders `index.html` with the SVG content embedded.
 
-If an exception occurs (e.g., API error), it renders `error.html` with the error message.
+If an exception occurs (e.g., API connection failure), it catches the exception and renders `error.html` with the error message.
 
-### Caching
-
-The application uses a simple global variable `_cached_api_client` to cache the `CriblAPI` instance. This prevents re-authentication on every request. The cache is initialized via `get_cached_api_client()`, which reads environment variables and creates a new client if one doesn't exist.
+### Execution
+When run directly (`__main__`), it starts the Flask development server on `0.0.0.0`. It checks the `FLASK_DEBUG` environment variable to toggle debug mode.
