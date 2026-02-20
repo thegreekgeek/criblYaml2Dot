@@ -37,6 +37,8 @@ CriblAPI(base_url="http://localhost:9000", username=None, password=None, token=N
 
 The constructor initializes a `requests.Session` object to persist headers (like `Content-Type` and `Authorization`) across requests. If a token is provided, it is used immediately. If username/password are provided but no token, the `login` method is called.
 
+**Note**: If neither token nor credentials are provided, the client assumes it might be running in an environment where authentication is implicit (e.g., on the master node), although this is an edge case.
+
 ### Methods
 
 #### `login(username, password)`
@@ -75,13 +77,15 @@ This function orchestrates the creation of the Graphviz visualization.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`. If a `description` is present in the input configuration, it is appended to the node label.
+    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`. If a `description` is present in the output configuration, it is appended to the node label.
 6.  **Create Edges**:
     -   Iterates through inputs again.
     -   Checks the `connections` property of each input.
     -   For each connection, if an `output` is specified, it draws an edge from the input to the output.
     -   The edge is labeled with the pipeline name (defaulting to "passthru").
+
+    **Note**: While `api_client.get_pipelines()` exists, it is not currently used to verify pipeline existence during graph construction.
 
 **Returns:**
 -   A `graphviz.Digraph` object representing the pipeline configuration.

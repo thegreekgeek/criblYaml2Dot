@@ -9,6 +9,10 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 *   **Visual Clarity**: Uses Graphviz to layout nodes (inputs, outputs) and edges (pipelines) clearly.
 *   **Dockerized**: Easy to deploy using Docker and Docker Compose.
 
+## Compatibility
+
+This application is designed to work with **Cribl Stream Distributed** deployments (specifically targeting the Leader node) or Single Instance deployments that support the `/api/v1/master/groups` endpoint.
+
 ## Prerequisites
 
 *   **Python 3.9+** (for local development)
