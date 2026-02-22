@@ -35,12 +35,12 @@ CriblAPI(base_url="http://localhost:9000", username=None, password=None, token=N
 -   **`username`**, **`password`**: Credentials for authentication.
 -   **`token`**: An optional existing bearer token.
 
-The constructor initializes a `requests.Session` object to persist headers (like `Content-Type` and `Authorization`) across requests. If a token is provided, it is used immediately. If username/password are provided but no token, the `login` method is called.
+The constructor initializes a `requests.Session` object to persist headers (like `Content-Type` and `Authorization`) across requests. If a token is provided, it is set in the `Authorization` header (prefixed with "Bearer " if not already present). If username/password are provided but no token, the `login` method is called.
 
 ### Methods
 
 #### `login(username, password)`
-Authenticates with the Cribl API using the provided credentials. It updates the session's `Authorization` header with the retrieved token.
+Authenticates with the Cribl API using the provided credentials. It updates the session's `Authorization` header with the retrieved token (ensuring the "Bearer " prefix is present).
 
 #### `get_worker_groups()`
 Retrieves all worker groups from the API endpoint `/api/v1/master/groups`.
@@ -75,8 +75,8 @@ This function orchestrates the creation of the Graphviz visualization.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `rounded,filled` and `lightblue` fill color. The node label includes the input ID and, if available, the description.
+    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `rounded,filled` and `lightgreen` fill color. The node label includes the output ID and, if available, the description.
 6.  **Create Edges**:
     -   Iterates through inputs again.
     -   Checks the `connections` property of each input.
