@@ -47,37 +47,18 @@ python -m unittest discover tests
 *   `tests/test_graph_generator.py`: Tests the graph generation logic using mocked API responses.
 *   `tests/test_cribl_api.py`: Tests the API client methods (mocking `requests`).
 
+## Future Goals & Maintenance
+
+*   Maintain API compatibility with newer Cribl Stream versions.
+*   Enhance visualization features (e.g., more detailed node information, interactive graphs).
+*   Ensure robust error handling and logging.
+
 ## Key Considerations for Agents
 
 *   **API Client**: The `CriblAPI` class handles authentication. If you modify it, ensure you handle token management and headers correctly.
 *   **Graphviz**: When modifying graph generation, remember that the `graphviz` library produces DOT source code. Ensure compatibility with standard Graphviz rendering.
 *   **Documentation**: Keep `README.md` and this file updated if you add new features or change the architecture.
 *   **Symlinks**: `GEMINI.md` and `QWEN.md` are symbolic links to this file and should be maintained as such.
-# AGENTS DOCUMENT
-
-## Objective
-The current objective is to maintain and enhance a Python-based Flask application that visualizes Cribl Stream pipelines. The application retrieves configuration data (inputs, outputs, and pipeline connections) from the Cribl API and generates a Graphviz visualization.
-
-## Tooling
-- **Python 3.9+**: The core programming language.
-- **Flask**: Web framework used to serve the visualization.
-- **Graphviz**: Used for generating the pipeline graph.
-- **Requests**: For interacting with the Cribl API.
-- **Docker & Docker Compose**: For containerizing and deploying the application.
-
-## Project Structure & Goals
-The project has evolved from a local file-based script to a fully dockerized web application interacting with the Cribl API.
-
-### Current Features
-- **API Integration**: `cribl_api.py` handles authentication and data fetching from Cribl Stream.
-- **Graph Generation**: `graph_generator.py` transforms the API data into a DOT format graph.
-- **Web Interface**: `app.py` serves the generated graph as an SVG.
-- **Containerization**: The app is dockerized and can be deployed via `docker-compose`.
-
-### Future Goals / Maintenance
-- Maintain API compatibility with newer Cribl Stream versions.
-- Enhance visualization features (e.g., more detailed node information, interactive graphs).
-- Ensure robust error handling and logging.
 
 ## Additional Documentation
 
