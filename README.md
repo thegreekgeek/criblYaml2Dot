@@ -106,7 +106,10 @@ This repository includes local copies of Cribl API documentation for reference:
 
 ## Documentation
 
-For detailed technical documentation of the codebase, including class references and logic, please see [Code Reference](docs/CODE_REFERENCE.md).
+For detailed technical documentation:
+
+*   [Architecture Overview](docs/ARCHITECTURE.md) - System overview, component details, and data flow.
+*   [Code Reference](docs/CODE_REFERENCE.md) - Detailed class references and logic.
 
 ## Contributing
 

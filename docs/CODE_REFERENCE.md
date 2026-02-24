@@ -53,10 +53,11 @@ Retrieves all output destinations for a specific worker group (`group_id`). It q
 
 #### `get_pipelines(group_id)`
 Retrieves all pipelines for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/pipelines`.
+*Note: This method is available but not currently used by the graph generator, which derives pipeline names from input connections.*
 
 ### Helper Methods
 -   `_get(endpoint)`: Performs a GET request to the specified endpoint, handling common errors like 401 Unauthorized.
--   `_post(endpoint, payload)`: Performs a POST request to the specified endpoint.
+-   `_post(endpoint, payload)`: Performs a POST request to the specified endpoint, handling common errors like 401 Unauthorized.
 
 ## Graph Generator
 
@@ -75,8 +76,8 @@ This function orchestrates the creation of the Graphviz visualization.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
 4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`. If a `description` property exists, it is appended to the node label.
+    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`. If a `description` property exists, it is appended to the node label.
 6.  **Create Edges**:
     -   Iterates through inputs again.
     -   Checks the `connections` property of each input.
