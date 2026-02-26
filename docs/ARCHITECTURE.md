@@ -46,7 +46,7 @@ The application is built using Python and consists of the following key componen
 1.  **User Request**: A user accesses the application URL (e.g., `http://localhost:8080/`).
 2.  **API Client Initialization**: The Flask app retrieves or initializes a cached `CriblAPI` client.
 3.  **Data Fetching**: The app calls the API client to fetch the list of worker groups.
-4.  **Graph Construction**: For each worker group, the `graph_generator` fetches inputs and outputs, then iterates through them to build the graph nodes and edges.
+4.  **Graph Construction**: For each worker group, the `graph_generator` fetches inputs and outputs. It creates nodes for these items and establishes edges by analyzing the connection settings within the input configurations.
 5.  **Rendering**: The `graphviz` library compiles the graph into SVG format.
 6.  **Response**: The Flask app injects the SVG into the `index.html` template and returns the rendered HTML to the user's browser.
 
