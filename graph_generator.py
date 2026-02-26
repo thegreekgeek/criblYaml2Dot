@@ -15,7 +15,7 @@ def generate_graph(api_client):
         Exception: If no worker groups are found.
     """
     dot = graphviz.Digraph("Cribl", comment="Cribl Configuration")
-    dot.attr(rankdir="LR", splines="polylines", nodesep="0.5", ranksep="1.5")
+    dot.attr(rankdir="LR", splines="polyline", nodesep="0.5", ranksep="1.5")
 
     groups = api_client.get_worker_groups().get("items", [])
     if not groups:
