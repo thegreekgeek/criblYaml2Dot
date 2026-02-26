@@ -65,5 +65,31 @@ class TestCriblAPI(unittest.TestCase):
             f"{self.base_url}/api/v1/m/{group_id}/pipelines"
         )
 
+    def test_get_source_status(self):
+        group_id = "test-group"
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        self.api.session.get.return_value = mock_response
+
+        self.api.get_source_status(group_id)
+
+        self.api.session.get.assert_called_with(
+            f"{self.base_url}/api/v1/m/{group_id}/system/status/inputs"
+        )
+
+    def test_get_destination_status(self):
+        group_id = "test-group"
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": []}
+        self.api.session.get.return_value = mock_response
+
+        self.api.get_destination_status(group_id)
+
+        self.api.session.get.assert_called_with(
+            f"{self.base_url}/api/v1/m/{group_id}/system/status/outputs"
+        )
+
 if __name__ == '__main__':
     unittest.main()
