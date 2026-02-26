@@ -130,6 +130,20 @@ class CriblAPI:
         """
         return self._get(f"/api/v1/m/{group_id}/pipelines")
 
+    def get_source_status(self, group_id):
+        """
+        Retrieves status for all sources (inputs) for a given worker group.
+        Assumes the endpoint is /api/v1/m/<group_id>/system/status/inputs.
+        """
+        return self._get(f"/api/v1/m/{group_id}/system/status/inputs")
+
+    def get_destination_status(self, group_id):
+        """
+        Retrieves status for all destinations (outputs) for a given worker group.
+        Assumes the endpoint is /api/v1/m/<group_id>/system/status/outputs.
+        """
+        return self._get(f"/api/v1/m/{group_id}/system/status/outputs")
+
 
 def get_api_client_from_env():
     """
