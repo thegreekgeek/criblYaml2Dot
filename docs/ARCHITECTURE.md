@@ -23,7 +23,7 @@ The application is built using Python and consists of the following key componen
 *   **Role**: The interface for communicating with the Cribl Stream API.
 *   **Responsibilities**:
     *   **Authentication**: Handling login and token management. It supports both token-based and username/password authentication.
-    *   **Data Retrieval**: Fetching worker groups, inputs (sources), outputs (destinations), and pipelines from the Cribl instance.
+    *   **Data Retrieval**: Fetching worker groups, inputs (sources), and outputs (destinations) from the Cribl instance.
     *   **Session Management**: Using `requests.Session` to maintain persistent connections and headers.
 
 ### 3. Graph Generator (`graph_generator.py`)
