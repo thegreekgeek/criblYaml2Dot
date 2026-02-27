@@ -54,6 +54,12 @@ Retrieves all output destinations for a specific worker group (`group_id`). It q
 #### `get_pipelines(group_id)`
 Retrieves all pipelines for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/pipelines`.
 
+#### `get_source_status(group_id)`
+Retrieves status metrics (like events per second) for all sources (inputs) for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/system/status/inputs`.
+
+#### `get_destination_status(group_id)`
+Retrieves status metrics for all destinations (outputs) for a specific worker group (`group_id`). It queries `/api/v1/m/{group_id}/system/status/outputs`.
+
 ### Helper Methods
 -   `_get(endpoint)`: Performs a GET request to the specified endpoint, handling common errors like 401 Unauthorized.
 -   `_post(endpoint, payload)`: Performs a POST request to the specified endpoint.
@@ -73,10 +79,10 @@ This function orchestrates the creation of the Graphviz visualization.
 1.  **Initialize Graph**: Creates a `graphviz.Digraph` object with specific attributes (rankdir="LR", splines="polylines").
 2.  **Fetch Worker Groups**: Calls `api_client.get_worker_groups()`. If no groups are found, it raises an exception.
 3.  **Iterate Groups**: For each worker group, it creates a subgraph (cluster).
-4.  **Fetch Configuration**: Retrieves inputs (`get_sources`) and outputs (`get_destinations`) for the group.
+4.  **Fetch Configuration**: Retrieves inputs (`get_sources`), outputs (`get_destinations`), and their respective status metrics (`get_source_status`, `get_destination_status`) for the group.
 5.  **Create Nodes**:
-    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`.
-    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`.
+    -   **Inputs**: Iterates through inputs. Skips any input where `disabled` is `True`. Creates a "box" node styled with `lightblue`. Appends the node description and EPS (Events Per Second) or total events metric to the node label if available.
+    -   **Outputs**: Iterates through outputs. Creates a "box" node styled with `lightgreen`. Appends the node description and EPS or total events metric to the node label if available.
 6.  **Create Edges**:
     -   Iterates through inputs again.
     -   Checks the `connections` property of each input.

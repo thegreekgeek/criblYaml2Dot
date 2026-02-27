@@ -7,6 +7,7 @@ A Flask application that visualizes Cribl Stream pipelines and their connections
 *   **Dynamic Visualization**: Automatically generates a visual representation of your Cribl pipelines.
 *   **Real-time Data**: Fetches the latest configuration directly from your Cribl Stream instance.
 *   **Visual Clarity**: Uses Graphviz to layout nodes (inputs, outputs) and edges (pipelines) clearly.
+*   **Metrics Overlay**: Displays Events Per Second (EPS) or total events on graph nodes when data is available.
 *   **Dockerized**: Easy to deploy using Docker and Docker Compose.
 
 ## Prerequisites
