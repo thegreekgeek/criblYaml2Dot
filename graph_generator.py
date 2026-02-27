@@ -85,7 +85,7 @@ def generate_graph(api_client):
                     # Add EPS metric if available
                     metrics = dest_metrics.get(output_id)
                     if metrics:
-                         # Try to find EPS or events count
+                        # Try to find EPS or events count
                         eps = metrics.get("eps")
                         if eps is not None:
                             label += f"\n({eps:.2f} EPS)"
