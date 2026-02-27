@@ -416,7 +416,18 @@ def generate_graph(api_client):
                         color="gray50",
                         fontsize="9",
                         fontcolor="gray30",
-                        penwidth="0.5"
+                        penwidth="0.5",
+                        rank="sink"  # Position at bottom (corner)
+                    )
+
+                    # Add invisible node to help with corner positioning
+                    disabled_cluster.node(
+                        f"_anchor_disabled_{group_id}",
+                        label="",
+                        shape="point",
+                        width="0",
+                        height="0",
+                        style="invis"
                     )
 
                     # Render compact disabled inputs
