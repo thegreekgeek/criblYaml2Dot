@@ -183,6 +183,22 @@ class CriblAPI:
             print(f"Destination health information not available for group {group_id}: {e}")
             return {"items": []}
 
+    def get_pipeline_functions(self, group_id, pipeline_id):
+        """
+        Retrieves detailed information about functions in a specific pipeline.
+        Used for calculating pipeline complexity scores.
+        Assumes the endpoint is /api/v1/m/<group_id>/pipelines/<pipeline_id>.
+
+        Returns: Dictionary with pipeline details including functions list.
+                 Returns empty dict on failure (graceful degradation).
+        """
+        try:
+            return self._get(f"/api/v1/m/{group_id}/pipelines/{pipeline_id}")
+        except Exception as e:
+            # If pipeline details not available, return empty for graceful degradation
+            print(f"Pipeline functions not available for {group_id}/{pipeline_id}: {e}")
+            return {}
+
 
 def get_api_client_from_env():
     """

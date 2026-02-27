@@ -104,7 +104,7 @@ python -m pytest tests/test_cribl_api.py -v
 
 ## Performance Impact
 
-- Minimal - adds ~7 API calls per graph generation
+- Minimal - adds ~7 API calls per graph
 - No impact on rendering time (still Graphviz)
 - Memory usage negligible (metrics only in memory during generation)
 
@@ -112,18 +112,15 @@ python -m pytest tests/test_cribl_api.py -v
 
 ✅ Fully backward compatible
 - Existing code continues to work unchanged
-- Graceful degradation if APIs unavailable
+- Graceful degradation if metrics unavailable
 - Visual-only enhancement (no breaking changes)
 
 ## Next Steps
 
 1. ✅ Test with your Cribl instance
-2. ✅ Adjust color thresholds if needed (see `_get_node_color()`)
+2. ✅ Adjust color thresholds if needed
 3. ✅ Plan Feature #2: Configuration Analysis
 
 ---
 
-For detailed documentation, see:
-- `docs/FEATURE_1_METRICS_OVERLAY.md`
-- `docs/CODE_REFERENCE.md`
-- `IMPLEMENTATION_SUMMARY_FEATURE_1.md`
+For more details, see the [complete guide](../FEATURE_1_METRICS_OVERLAY.md)

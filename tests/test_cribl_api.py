@@ -167,5 +167,40 @@ class TestCriblAPI(unittest.TestCase):
         # Should return empty items on failure
         self.assertEqual(result, {"items": []})
 
+    def test_get_pipeline_functions(self):
+        """Test retrieving pipeline function details for complexity scoring."""
+        group_id = "test-group"
+        pipeline_id = "test-pipeline"
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "id": pipeline_id,
+            "functions": [
+                {"name": "func1", "type": "regex"},
+                {"name": "func2", "type": "lookup"},
+                {"name": "func3", "type": "json"},
+            ],
+        }
+        self.api.session.get.return_value = mock_response
+
+        result = self.api.get_pipeline_functions(group_id, pipeline_id)
+
+        self.api.session.get.assert_called_with(
+            f"{self.base_url}/api/v1/m/{group_id}/pipelines/{pipeline_id}"
+        )
+        self.assertEqual(len(result.get("functions", [])), 3)
+        self.assertEqual(result["id"], pipeline_id)
+
+    def test_get_pipeline_functions_graceful_failure(self):
+        """Test that pipeline functions gracefully handle API errors."""
+        group_id = "test-group"
+        pipeline_id = "test-pipeline"
+        self.api.session.get.side_effect = Exception("Pipeline not found")
+
+        result = self.api.get_pipeline_functions(group_id, pipeline_id)
+
+        # Should return empty dict on failure for graceful degradation
+        self.assertEqual(result, {})
+
 if __name__ == '__main__':
     unittest.main()

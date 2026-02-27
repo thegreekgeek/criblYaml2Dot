@@ -1,6 +1,13 @@
 import unittest
 from unittest.mock import MagicMock
-from graph_generator import generate_graph, _get_node_color, _get_edge_attributes
+from graph_generator import (
+    generate_graph,
+    _get_node_color,
+    _get_edge_attributes,
+    _detect_orphan_inputs,
+    _detect_orphan_outputs,
+    _calculate_pipeline_complexity,
+)
 
 class TestGraphGenerator(unittest.TestCase):
 
@@ -238,6 +245,262 @@ class TestGraphGenerator(unittest.TestCase):
         attrs = _get_edge_attributes(None, 1000)
         self.assertEqual(attrs["color"], "gray")
         self.assertEqual(attrs["penwidth"], "1")
+
+    # Feature #2: Configuration Analysis Tests
+
+    def test_detect_orphan_inputs_with_orphans(self):
+        """Test detection of inputs with no connections."""
+        inputs = [
+            {"id": "in_connected", "disabled": False, "connections": [{"output": "out_1"}]},
+            {"id": "in_orphan", "disabled": False, "connections": []},
+        ]
+        connections_map = {
+            "in_connected": [{"output": "out_1"}],
+            "in_orphan": [],
+        }
+
+        orphans = _detect_orphan_inputs(inputs, connections_map)
+
+        self.assertEqual(orphans, {"in_orphan"})
+        self.assertNotIn("in_connected", orphans)
+
+    def test_detect_orphan_inputs_all_connected(self):
+        """Test when all inputs have connections."""
+        inputs = [
+            {"id": "in_1", "disabled": False, "connections": [{"output": "out_1"}]},
+            {"id": "in_2", "disabled": False, "connections": [{"output": "out_2"}]},
+        ]
+        connections_map = {
+            "in_1": [{"output": "out_1"}],
+            "in_2": [{"output": "out_2"}],
+        }
+
+        orphans = _detect_orphan_inputs(inputs, connections_map)
+
+        self.assertEqual(orphans, set())
+
+    def test_detect_orphan_inputs_ignores_disabled(self):
+        """Test that disabled inputs are not flagged as orphans."""
+        inputs = [
+            {"id": "in_disabled", "disabled": True, "connections": []},
+        ]
+        connections_map = {
+            "in_disabled": [],
+        }
+
+        orphans = _detect_orphan_inputs(inputs, connections_map)
+
+        self.assertEqual(orphans, set())
+
+    def test_detect_orphan_outputs_with_orphans(self):
+        """Test detection of outputs with no incoming references."""
+        outputs = [
+            {"id": "out_used"},
+            {"id": "out_orphan"},
+        ]
+        all_connections = [
+            {"output": "out_used", "pipeline": "main"},
+        ]
+
+        orphans = _detect_orphan_outputs(outputs, all_connections)
+
+        self.assertEqual(orphans, {"out_orphan"})
+        self.assertNotIn("out_used", orphans)
+
+    def test_detect_orphan_outputs_all_referenced(self):
+        """Test when all outputs are referenced."""
+        outputs = [
+            {"id": "out_1"},
+            {"id": "out_2"},
+        ]
+        all_connections = [
+            {"output": "out_1", "pipeline": "main"},
+            {"output": "out_2", "pipeline": "secondary"},
+        ]
+
+        orphans = _detect_orphan_outputs(outputs, all_connections)
+
+        self.assertEqual(orphans, set())
+
+    def test_calculate_pipeline_complexity_low(self):
+        """Test complexity scoring for low complexity pipeline."""
+        pipeline = {"id": "low", "functions": [{"name": "func1"}, {"name": "func2"}]}
+
+        result = _calculate_pipeline_complexity(pipeline)
+
+        self.assertEqual(result["score"], 2)
+        self.assertEqual(result["level"], "low")
+        self.assertIn("✓", result["label"])
+
+    def test_calculate_pipeline_complexity_medium(self):
+        """Test complexity scoring for medium complexity pipeline."""
+        pipeline = {
+            "id": "medium",
+            "functions": [{"name": f"func{i}"} for i in range(10)],
+        }
+
+        result = _calculate_pipeline_complexity(pipeline)
+
+        self.assertEqual(result["score"], 10)
+        self.assertEqual(result["level"], "medium")
+        self.assertIn("⚠", result["label"])
+
+    def test_calculate_pipeline_complexity_high(self):
+        """Test complexity scoring for high complexity pipeline."""
+        pipeline = {
+            "id": "high",
+            "functions": [{"name": f"func{i}"} for i in range(25)],
+        }
+
+        result = _calculate_pipeline_complexity(pipeline)
+
+        self.assertEqual(result["score"], 25)
+        self.assertEqual(result["level"], "high")
+        self.assertIn("🔴", result["label"])
+
+    def test_calculate_pipeline_complexity_no_functions(self):
+        """Test complexity scoring when no function data available."""
+        pipeline = {"id": "empty"}
+
+        result = _calculate_pipeline_complexity(pipeline)
+
+        self.assertEqual(result["score"], 0)
+        self.assertEqual(result["level"], "low")
+        self.assertEqual(result["label"], "")
+
+    def test_generate_graph_with_orphan_inputs(self):
+        """Test that orphan inputs appear in graph with correct styling."""
+        mock_api_client = MagicMock()
+        mock_api_client.get_worker_groups.return_value = {"items": [{"id": "default"}]}
+        mock_api_client.get_sources.return_value = {
+            "items": [
+                {"id": "in_orphan", "disabled": False, "connections": []},
+                {"id": "in_used", "disabled": False, "connections": [{"output": "out_1"}]},
+            ]
+        }
+        mock_api_client.get_destinations.return_value = {"items": [{"id": "out_1"}]}
+        mock_api_client.get_source_status.return_value = {"items": []}
+        mock_api_client.get_destination_status.return_value = {"items": []}
+        mock_api_client.get_source_health.return_value = {"items": []}
+        mock_api_client.get_destination_health.return_value = {"items": []}
+        mock_api_client.get_pipeline_status.return_value = {"items": []}
+        mock_api_client.get_pipelines.return_value = {"items": []}
+        mock_api_client.get_pipeline_functions.return_value = {}
+
+        dot = generate_graph(mock_api_client)
+        source_code = dot.source
+
+        # Verify orphan input is marked
+        self.assertIn("⚠ [ORPHAN] in_orphan", source_code)
+        self.assertIn("mistyrose", source_code)  # Light red color
+
+    def test_generate_graph_with_disabled_components(self):
+        """Test that disabled items appear in graph with faded styling."""
+        mock_api_client = MagicMock()
+        mock_api_client.get_worker_groups.return_value = {"items": [{"id": "default"}]}
+        mock_api_client.get_sources.return_value = {
+            "items": [
+                {"id": "in_disabled", "disabled": True},
+            ]
+        }
+        mock_api_client.get_destinations.return_value = {"items": []}
+        mock_api_client.get_source_status.return_value = {"items": []}
+        mock_api_client.get_destination_status.return_value = {"items": []}
+        mock_api_client.get_source_health.return_value = {"items": []}
+        mock_api_client.get_destination_health.return_value = {"items": []}
+        mock_api_client.get_pipeline_status.return_value = {"items": []}
+        mock_api_client.get_pipelines.return_value = {"items": []}
+
+        dot = generate_graph(mock_api_client)
+        source_code = dot.source
+
+        # Verify disabled input appears with gray styling
+        self.assertIn("[DISABLED] in_disabled", source_code)
+        self.assertIn("lightgray", source_code)
+        self.assertIn("dashed", source_code)
+
+    def test_generate_graph_with_complex_pipelines(self):
+        """Test that complex pipelines show complexity indicators."""
+        mock_api_client = MagicMock()
+        mock_api_client.get_worker_groups.return_value = {"items": [{"id": "default"}]}
+        mock_api_client.get_sources.return_value = {
+            "items": [
+                {
+                    "id": "in_1",
+                    "disabled": False,
+                    "connections": [{"output": "out_1", "pipeline": "complex"}],
+                }
+            ]
+        }
+        mock_api_client.get_destinations.return_value = {"items": [{"id": "out_1"}]}
+        mock_api_client.get_source_status.return_value = {"items": []}
+        mock_api_client.get_destination_status.return_value = {"items": []}
+        mock_api_client.get_source_health.return_value = {"items": []}
+        mock_api_client.get_destination_health.return_value = {"items": []}
+        mock_api_client.get_pipeline_status.return_value = {"items": []}
+        # Return a complex pipeline
+        mock_api_client.get_pipelines.return_value = {
+            "items": [
+                {
+                    "id": "complex",
+                    "functions": [{"name": f"func{i}"} for i in range(20)],
+                }
+            ]
+        }
+        mock_api_client.get_pipeline_functions.return_value = {
+            "functions": [{"name": f"func{i}"} for i in range(20)]
+        }
+
+        dot = generate_graph(mock_api_client)
+        source_code = dot.source
+
+        # Verify complexity indicator appears
+        self.assertIn("Complex", source_code)
+        self.assertIn("funcs", source_code)
+
+    def test_all_features_work_together(self):
+        """Test that Feature #1 and Feature #2 work together."""
+        mock_api_client = MagicMock()
+        mock_api_client.get_worker_groups.return_value = {"items": [{"id": "default"}]}
+        mock_api_client.get_sources.return_value = {
+            "items": [
+                {
+                    "id": "in_syslog",
+                    "disabled": False,
+                    "connections": [{"output": "out_s3", "pipeline": "main"}],
+                },
+                {"id": "in_orphan", "disabled": False, "connections": []},
+                {"id": "in_disabled", "disabled": True},
+            ]
+        }
+        mock_api_client.get_destinations.return_value = {
+            "items": [
+                {"id": "out_s3"},
+                {"id": "out_orphan"},
+            ]
+        }
+        mock_api_client.get_source_status.return_value = {
+            "items": [{"id": "in_syslog", "eps": 100.0}]
+        }
+        mock_api_client.get_destination_status.return_value = {
+            "items": [{"id": "out_s3", "eps": 95.0}]
+        }
+        mock_api_client.get_source_health.return_value = {
+            "items": [{"id": "in_syslog", "error_rate": 2.0}]
+        }
+        mock_api_client.get_destination_health.return_value = {"items": []}
+        mock_api_client.get_pipeline_status.return_value = {"items": []}
+        mock_api_client.get_pipelines.return_value = {"items": []}
+
+        # Should not raise any exceptions
+        dot = generate_graph(mock_api_client)
+        source_code = dot.source
+
+        # Verify all features are present
+        self.assertIn("in_syslog", source_code)  # Connected input
+        self.assertIn("⚠ [ORPHAN]", source_code)  # Orphan input
+        self.assertIn("[DISABLED]", source_code)  # Disabled input
+        self.assertIn("EPS", source_code)  # Feature #1 metrics
 
 if __name__ == '__main__':
     unittest.main()

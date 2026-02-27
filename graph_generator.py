@@ -63,6 +63,114 @@ def _get_edge_attributes(eps_value, max_eps):
     }
 
 
+def _detect_orphan_inputs(inputs, connections_map):
+    """
+    Identifies input sources that have no outgoing connections.
+    An orphan input is one that is not routed to any output.
+
+    Args:
+        inputs (list): List of input source objects.
+        connections_map (dict): Dict mapping input_id → list of output connections.
+
+    Returns:
+        set: IDs of orphaned input sources.
+    """
+    orphan_inputs = set()
+
+    for input_data in inputs:
+        if not input_data.get("disabled", False):
+            input_id = input_data["id"]
+            connections = connections_map.get(input_id, [])
+
+            # If no connections, it's an orphan
+            if not connections or len(connections) == 0:
+                orphan_inputs.add(input_id)
+
+    return orphan_inputs
+
+
+def _detect_orphan_outputs(outputs, all_connections):
+    """
+    Identifies output destinations with no incoming connections.
+    An orphan output is one that is not referenced by any input.
+
+    Args:
+        outputs (list): List of output destination objects.
+        all_connections (list): All connection objects from all inputs.
+
+    Returns:
+        set: IDs of orphaned output destinations.
+    """
+    # Collect all output IDs that are referenced in connections
+    referenced_outputs = set()
+
+    for conn in all_connections:
+        if conn and "output" in conn:
+            referenced_outputs.add(conn["output"])
+
+    # Find outputs not in the referenced set
+    orphan_outputs = set()
+    for output_data in outputs:
+        output_id = output_data["id"]
+        if output_id not in referenced_outputs:
+            orphan_outputs.add(output_id)
+
+    return orphan_outputs
+
+
+def _calculate_pipeline_complexity(pipeline_obj):
+    """
+    Calculates complexity score for a pipeline based on function count.
+    Higher function count = higher complexity.
+
+    Args:
+        pipeline_obj (dict): Pipeline object with 'functions' or 'config' field.
+
+    Returns:
+        dict: {
+            "score": int,           # Number of functions
+            "level": str,           # "low", "medium", or "high"
+            "label": str           # Display label with indicator
+        }
+
+    Thresholds:
+        - score < 5:   "low"      (efficient)
+        - score 5-15:  "medium"   (complex, watch)
+        - score > 15:  "high"     (very complex, refactor)
+    """
+    # Try to get function count from pipeline object
+    function_count = 0
+
+    # Method 1: Direct functions list
+    if "functions" in pipeline_obj and isinstance(pipeline_obj["functions"], list):
+        function_count = len(pipeline_obj["functions"])
+    # Method 2: Direct function_count field
+    elif "function_count" in pipeline_obj:
+        function_count = int(pipeline_obj.get("function_count", 0))
+    # Method 3: Count functions in config if available
+    elif "config" in pipeline_obj and isinstance(pipeline_obj["config"], dict):
+        config = pipeline_obj["config"]
+        if "functions" in config:
+            function_count = len(config["functions"])
+
+    # Classify complexity
+    if function_count < 5:
+        level = "low"
+        indicator = "✓"
+    elif function_count <= 15:
+        level = "medium"
+        indicator = "⚠"
+    else:
+        level = "high"
+        indicator = "🔴"
+
+    return {
+        "score": function_count,
+        "level": level,
+        "label": f"{indicator} ({function_count} funcs)" if function_count > 0 else ""
+    }
+
+
 def generate_graph(api_client):
     """
     Fetches Cribl configurations from the API and returns a graphviz Digraph object.
@@ -132,6 +240,47 @@ def generate_graph(api_client):
                 print(f"Failed to fetch pipeline status for group {group_id}: {e}")
                 pipeline_metrics = {}
 
+            # Feature #2: Configuration Analysis
+            # Build a map of connections by input ID
+            connections_map = {}
+            all_connections = []
+            for input_data in inputs:
+                input_id = input_data["id"]
+                connections = input_data.get("connections", [])
+                connections_map[input_id] = connections
+                all_connections.extend(connections)
+
+            # Detect orphan inputs and outputs
+            try:
+                orphan_inputs = _detect_orphan_inputs(inputs, connections_map)
+            except Exception as e:
+                print(f"Failed to detect orphan inputs for group {group_id}: {e}")
+                orphan_inputs = set()
+
+            try:
+                orphan_outputs = _detect_orphan_outputs(outputs, all_connections)
+            except Exception as e:
+                print(f"Failed to detect orphan outputs for group {group_id}: {e}")
+                orphan_outputs = set()
+
+            # Get pipeline functions for complexity scoring
+            try:
+                pipelines = api_client.get_pipelines(group_id).get("items", [])
+                pipeline_complexity = {}
+                for pipeline in pipelines:
+                    pipeline_id = pipeline["id"]
+                    # Try to get detailed function info
+                    try:
+                        pipeline_detail = api_client.get_pipeline_functions(group_id, pipeline_id)
+                        complexity = _calculate_pipeline_complexity(pipeline_detail)
+                    except Exception:
+                        # If detailed fetch fails, use basic info
+                        complexity = _calculate_pipeline_complexity(pipeline)
+                    pipeline_complexity[pipeline_id] = complexity
+            except Exception as e:
+                print(f"Failed to calculate pipeline complexity for group {group_id}: {e}")
+                pipeline_complexity = {}
+
             # Calculate max EPS for edge scaling
             all_eps_values = []
             for metrics in source_metrics.values():
@@ -148,33 +297,75 @@ def generate_graph(api_client):
             with c.subgraph() as s:
                 s.attr(rank="source")
                 for input_data in inputs:
-                    if not input_data.get("disabled", False):
+                    input_id = input_data["id"]
+                    is_disabled = input_data.get("disabled", False)
+                    is_orphan = input_id in orphan_inputs
+
+                    # Skip creating node for disabled items in main loop (we'll handle below)
+                    if is_disabled:
+                        continue
+
+                    description = input_data.get("description", "")
+                    label = f"{input_id}"
+
+                    # Add orphan indicator if applicable
+                    if is_orphan:
+                        label = f"⚠ [ORPHAN] {label}"
+
+                    # Add EPS metric if available
+                    metrics = source_metrics.get(input_id)
+                    if metrics:
+                        eps = metrics.get("eps")
+                        if eps is not None:
+                            label += f"\n({eps:.2f} EPS)"
+                        elif "events" in metrics:
+                            label += f"\n({metrics['events']} Events)"
+
+                    if description:
+                        label += f"\n------------\n{description}"
+
+                    # Determine node color based on Feature #2 analysis priority
+                    if is_orphan:
+                        # Orphan nodes get red styling
+                        fillcolor = "mistyrose"  # Light red
+                        border_style = "rounded,filled,bold"
+                        border_color = "red"
+                    else:
+                        # Use Feature #1 health-based color
+                        health = source_health_map.get(input_id)
+                        fillcolor = _get_node_color(health) or "lightblue"
+                        border_style = "rounded,filled"
+                        border_color = None
+
+                    node_kwargs = {
+                        "label": label,
+                        "shape": "box",
+                        "style": border_style,
+                        "fillcolor": fillcolor,
+                    }
+                    if border_color:
+                        node_kwargs["color"] = border_color
+
+                    s.node(f"{group_id}_{input_id}", **node_kwargs)
+
+                # Now render disabled inputs with faded styling
+                for input_data in inputs:
+                    if input_data.get("disabled", False):
                         input_id = input_data["id"]
                         description = input_data.get("description", "")
-                        label = f"{input_id}"
-
-                        # Add EPS metric if available
-                        metrics = source_metrics.get(input_id)
-                        if metrics:
-                            eps = metrics.get("eps")
-                            if eps is not None:
-                                label += f"\n({eps:.2f} EPS)"
-                            elif "events" in metrics:
-                                label += f"\n({metrics['events']} Events)"
+                        label = f"[DISABLED] {input_id}"
 
                         if description:
                             label += f"\n------------\n{description}"
-
-                        # Determine node color based on health
-                        health = source_health_map.get(input_id)
-                        fillcolor = _get_node_color(health) or "lightblue"
 
                         s.node(
                             f"{group_id}_{input_id}",
                             label=label,
                             shape="box",
-                            style="rounded,filled",
-                            fillcolor=fillcolor,
+                            style="rounded,filled,dashed",
+                            fillcolor="lightgray",
+                            color="gray",
+                            penwidth="0.6",
                         )
 
             # Create nodes for outputs
@@ -182,8 +373,19 @@ def generate_graph(api_client):
                 s.attr(rank="sink")
                 for output_data in outputs:
                     output_id = output_data["id"]
+                    is_disabled = output_data.get("disabled", False)
+                    is_orphan = output_id in orphan_outputs
+
+                    # Skip creating node for disabled items in main loop
+                    if is_disabled:
+                        continue
+
                     description = output_data.get("description", "")
                     label = f"{output_id}"
+
+                    # Add orphan indicator if applicable
+                    if is_orphan:
+                        label = f"⚠ [ORPHAN] {label}"
 
                     # Add EPS metric if available
                     metrics = dest_metrics.get(output_id)
@@ -197,17 +399,49 @@ def generate_graph(api_client):
                     if description:
                         label += f"\n------------\n{description}"
 
-                    # Determine node color based on health
-                    health = dest_health_map.get(output_id)
-                    fillcolor = _get_node_color(health) or "lightgreen"
+                    # Determine node color based on Feature #2 analysis priority
+                    if is_orphan:
+                        # Orphan nodes get red styling
+                        fillcolor = "mistyrose"  # Light red
+                        border_style = "rounded,filled,bold"
+                        border_color = "red"
+                    else:
+                        # Use Feature #1 health-based color
+                        health = dest_health_map.get(output_id)
+                        fillcolor = _get_node_color(health) or "lightgreen"
+                        border_style = "rounded,filled"
+                        border_color = None
 
-                    s.node(
-                        f"{group_id}_{output_id}",
-                        label=label,
-                        shape="box",
-                        style="rounded,filled",
-                        fillcolor=fillcolor,
-                    )
+                    node_kwargs = {
+                        "label": label,
+                        "shape": "box",
+                        "style": border_style,
+                        "fillcolor": fillcolor,
+                    }
+                    if border_color:
+                        node_kwargs["color"] = border_color
+
+                    s.node(f"{group_id}_{output_id}", **node_kwargs)
+
+                # Now render disabled outputs with faded styling
+                for output_data in outputs:
+                    if output_data.get("disabled", False):
+                        output_id = output_data["id"]
+                        description = output_data.get("description", "")
+                        label = f"[DISABLED] {output_id}"
+
+                        if description:
+                            label += f"\n------------\n{description}"
+
+                        s.node(
+                            f"{group_id}_{output_id}",
+                            label=label,
+                            shape="box",
+                            style="rounded,filled,dashed",
+                            fillcolor="lightgray",
+                            color="gray",
+                            penwidth="0.6",
+                        )
 
             # Add edges for connections with metrics overlay
             for input_data in inputs:
@@ -227,7 +461,17 @@ def generate_graph(api_client):
                             if edge_eps > 0:
                                 edge_label += f"\n({edge_eps:.2f} EPS)"
 
-                            # Get edge styling based on throughput
+                            # Feature #2: Add complexity information to edge label
+                            complexity = pipeline_complexity.get(pipeline, {})
+                            if complexity.get("label"):
+                                complexity_label = complexity["label"]
+                                # Add complexity indicator to edge
+                                if complexity["level"] == "high":
+                                    edge_label += f"\n⚠ Complex {complexity_label}"
+                                elif complexity["level"] == "medium":
+                                    edge_label += f"\n{complexity_label}"
+
+                            # Get edge styling based on throughput (Feature #1)
                             edge_attrs = _get_edge_attributes(edge_eps, max_eps)
 
                             c.edge(
