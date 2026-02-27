@@ -91,5 +91,81 @@ class TestCriblAPI(unittest.TestCase):
             f"{self.base_url}/api/v1/m/{group_id}/system/status/outputs"
         )
 
+    def test_get_pipeline_status(self):
+        group_id = "test-group"
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"items": [{"id": "main", "eps": 100.0}]}
+        self.api.session.get.return_value = mock_response
+
+        result = self.api.get_pipeline_status(group_id)
+
+        self.api.session.get.assert_called_with(
+            f"{self.base_url}/api/v1/m/{group_id}/system/status/pipelines"
+        )
+        self.assertEqual(result, {"items": [{"id": "main", "eps": 100.0}]})
+
+    def test_get_pipeline_status_failure_graceful(self):
+        """Test that pipeline status gracefully handles API errors."""
+        group_id = "test-group"
+        self.api.session.get.side_effect = Exception("API Error")
+
+        result = self.api.get_pipeline_status(group_id)
+
+        # Should return empty items on failure
+        self.assertEqual(result, {"items": []})
+
+    def test_get_source_health(self):
+        group_id = "test-group"
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"id": "in_1", "error_rate": 2.0}]
+        }
+        self.api.session.get.return_value = mock_response
+
+        result = self.api.get_source_health(group_id)
+
+        self.api.session.get.assert_called_with(
+            f"{self.base_url}/api/v1/m/{group_id}/system/health/inputs"
+        )
+        self.assertEqual(result, {"items": [{"id": "in_1", "error_rate": 2.0}]})
+
+    def test_get_source_health_failure_graceful(self):
+        """Test that source health gracefully handles API errors."""
+        group_id = "test-group"
+        self.api.session.get.side_effect = Exception("API Error")
+
+        result = self.api.get_source_health(group_id)
+
+        # Should return empty items on failure
+        self.assertEqual(result, {"items": []})
+
+    def test_get_destination_health(self):
+        group_id = "test-group"
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "items": [{"id": "out_1", "error_rate": 1.5}]
+        }
+        self.api.session.get.return_value = mock_response
+
+        result = self.api.get_destination_health(group_id)
+
+        self.api.session.get.assert_called_with(
+            f"{self.base_url}/api/v1/m/{group_id}/system/health/outputs"
+        )
+        self.assertEqual(result, {"items": [{"id": "out_1", "error_rate": 1.5}]})
+
+    def test_get_destination_health_failure_graceful(self):
+        """Test that destination health gracefully handles API errors."""
+        group_id = "test-group"
+        self.api.session.get.side_effect = Exception("API Error")
+
+        result = self.api.get_destination_health(group_id)
+
+        # Should return empty items on failure
+        self.assertEqual(result, {"items": []})
+
 if __name__ == '__main__':
     unittest.main()

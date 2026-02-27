@@ -144,6 +144,45 @@ class CriblAPI:
         """
         return self._get(f"/api/v1/m/{group_id}/system/status/outputs")
 
+    def get_pipeline_status(self, group_id):
+        """
+        Retrieves status for all pipelines for a given worker group.
+        Useful for getting pipeline-level metrics including throughput.
+        Assumes the endpoint is /api/v1/m/<group_id>/system/status/pipelines.
+        """
+        try:
+            return self._get(f"/api/v1/m/{group_id}/system/status/pipelines")
+        except Exception as e:
+            # If pipeline status is not available, return empty
+            print(f"Pipeline status not available for group {group_id}: {e}")
+            return {"items": []}
+
+    def get_source_health(self, group_id):
+        """
+        Retrieves health information for all sources (inputs) for a given worker group.
+        Assumes the endpoint is /api/v1/m/<group_id>/system/health/inputs.
+        Returns health status, error rates, and other diagnostic information.
+        """
+        try:
+            return self._get(f"/api/v1/m/{group_id}/system/health/inputs")
+        except Exception as e:
+            # If health info is not available, return empty
+            print(f"Source health information not available for group {group_id}: {e}")
+            return {"items": []}
+
+    def get_destination_health(self, group_id):
+        """
+        Retrieves health information for all destinations (outputs) for a given worker group.
+        Assumes the endpoint is /api/v1/m/<group_id>/system/health/outputs.
+        Returns health status, error rates, and other diagnostic information.
+        """
+        try:
+            return self._get(f"/api/v1/m/{group_id}/system/health/outputs")
+        except Exception as e:
+            # If health info is not available, return empty
+            print(f"Destination health information not available for group {group_id}: {e}")
+            return {"items": []}
+
 
 def get_api_client_from_env():
     """

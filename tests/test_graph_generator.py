@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from graph_generator import generate_graph
+from graph_generator import generate_graph, _get_node_color, _get_edge_attributes
 
 class TestGraphGenerator(unittest.TestCase):
 
@@ -52,6 +52,10 @@ class TestGraphGenerator(unittest.TestCase):
             ]
         }
 
+        # Mock health data
+        mock_api_client.get_source_health.return_value = {"items": []}
+        mock_api_client.get_destination_health.return_value = {"items": []}
+        mock_api_client.get_pipeline_status.return_value = {"items": []}
 
         # Generate graph
         dot = generate_graph(mock_api_client)
@@ -87,7 +91,10 @@ class TestGraphGenerator(unittest.TestCase):
 
         # Simulate API failure for status or empty
         mock_api_client.get_source_status.side_effect = Exception("API Error")
-        mock_api_client.get_destination_status.return_value = {} # Empty or missing items
+        mock_api_client.get_destination_status.return_value = {"items": []}
+        mock_api_client.get_source_health.return_value = {"items": []}
+        mock_api_client.get_destination_health.return_value = {"items": []}
+        mock_api_client.get_pipeline_status.return_value = {"items": []}
 
         dot = generate_graph(mock_api_client)
         source_code = dot.source
@@ -98,7 +105,6 @@ class TestGraphGenerator(unittest.TestCase):
         self.assertTrue('label="in_syslog"' in source_code or 'label=in_syslog' in source_code)
         self.assertNotIn("EPS", source_code)
 
-
     def test_generate_graph_no_groups(self):
         mock_api_client = MagicMock()
         mock_api_client.get_worker_groups.return_value = {"items": []}
@@ -107,6 +113,131 @@ class TestGraphGenerator(unittest.TestCase):
             generate_graph(mock_api_client)
 
         self.assertIn("No worker groups found", str(context.exception))
+
+    def test_generate_graph_with_health_status(self):
+        """Test that health status affects node coloring."""
+        mock_api_client = MagicMock()
+        mock_api_client.get_worker_groups.return_value = {
+            "items": [{"id": "default"}]
+        }
+        mock_api_client.get_sources.return_value = {
+            "items": [
+                {"id": "healthy_input", "disabled": False, "connections": []},
+                {"id": "unhealthy_input", "disabled": False, "connections": []}
+            ]
+        }
+        mock_api_client.get_destinations.return_value = {"items": []}
+
+        # Status data
+        mock_api_client.get_source_status.return_value = {"items": []}
+        mock_api_client.get_destination_status.return_value = {"items": []}
+
+        # Health data - unhealthy_input has high error rate
+        mock_api_client.get_source_health.return_value = {
+            "items": [
+                {"id": "healthy_input", "error_rate": 0.5},
+                {"id": "unhealthy_input", "error_rate": 15.0}  # > 10% = critical
+            ]
+        }
+        mock_api_client.get_destination_health.return_value = {"items": []}
+        mock_api_client.get_pipeline_status.return_value = {"items": []}
+
+        dot = generate_graph(mock_api_client)
+        source_code = dot.source
+
+        # Verify that unhealthy input gets red color
+        self.assertIn('fillcolor=lightcoral', source_code)
+        # Healthy input should use default color
+        self.assertIn('fillcolor=lightblue', source_code)
+
+    def test_generate_graph_with_edge_metrics(self):
+        """Test that edge metrics are included in the graph."""
+        mock_api_client = MagicMock()
+        mock_api_client.get_worker_groups.return_value = {
+            "items": [{"id": "default"}]
+        }
+        mock_api_client.get_sources.return_value = {
+            "items": [
+                {
+                    "id": "in_1",
+                    "disabled": False,
+                    "connections": [{"output": "out_1", "pipeline": "main"}]
+                }
+            ]
+        }
+        mock_api_client.get_destinations.return_value = {
+            "items": [{"id": "out_1", "disabled": False}]
+        }
+
+        # Status data
+        mock_api_client.get_source_status.return_value = {"items": []}
+        mock_api_client.get_destination_status.return_value = {"items": []}
+
+        # Pipeline metrics - main pipeline has 100 EPS
+        mock_api_client.get_pipeline_status.return_value = {
+            "items": [{"id": "main", "eps": 100.0}]
+        }
+
+        # Health data
+        mock_api_client.get_source_health.return_value = {"items": []}
+        mock_api_client.get_destination_health.return_value = {"items": []}
+
+        dot = generate_graph(mock_api_client)
+        source_code = dot.source
+
+        # Verify edge has EPS metric in label
+        self.assertIn('(100.00 EPS)', source_code)
+        # Verify edge has color attribute
+        self.assertIn('color=', source_code)
+        # Verify edge has penwidth attribute
+        self.assertIn('penwidth=', source_code)
+
+    def test_get_node_color_healthy(self):
+        """Test color calculation for healthy node."""
+        health = {"error_rate": 2.0, "drop_rate": 1.0}
+        color = _get_node_color(health)
+        self.assertIsNone(color)  # None means use default
+
+    def test_get_node_color_warning(self):
+        """Test color calculation for warning state."""
+        health = {"error_rate": 7.0}  # Between 5 and 10
+        color = _get_node_color(health)
+        self.assertEqual(color, "lightyellow")
+
+    def test_get_node_color_critical(self):
+        """Test color calculation for critical state."""
+        health = {"drop_rate": 12.0}  # > 10
+        color = _get_node_color(health)
+        self.assertEqual(color, "lightcoral")
+
+    def test_get_node_color_none(self):
+        """Test color calculation when no health data."""
+        color = _get_node_color(None)
+        self.assertIsNone(color)
+
+    def test_get_edge_attributes_high_volume(self):
+        """Test edge styling for high volume traffic."""
+        attrs = _get_edge_attributes(900, 1000)
+        self.assertEqual(attrs["color"], "darkred")
+        self.assertGreater(float(attrs["penwidth"]), 3.0)
+
+    def test_get_edge_attributes_medium_volume(self):
+        """Test edge styling for medium volume traffic."""
+        attrs = _get_edge_attributes(500, 1000)
+        self.assertEqual(attrs["color"], "orange")
+        self.assertGreater(float(attrs["penwidth"]), 2.0)
+
+    def test_get_edge_attributes_low_volume(self):
+        """Test edge styling for low volume traffic."""
+        attrs = _get_edge_attributes(100, 1000)
+        self.assertEqual(attrs["color"], "gray")
+        self.assertGreater(float(attrs["penwidth"]), 1.0)
+
+    def test_get_edge_attributes_no_data(self):
+        """Test edge styling when no EPS data available."""
+        attrs = _get_edge_attributes(None, 1000)
+        self.assertEqual(attrs["color"], "gray")
+        self.assertEqual(attrs["penwidth"], "1")
 
 if __name__ == '__main__':
     unittest.main()
