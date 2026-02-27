@@ -301,7 +301,7 @@ def generate_graph(api_client):
                     is_disabled = input_data.get("disabled", False)
                     is_orphan = input_id in orphan_inputs
 
-                    # Skip creating node for disabled items in main loop (we'll handle below)
+                    # Skip creating node for disabled items in main loop (we'll handle in cluster below)
                     if is_disabled:
                         continue
 
@@ -348,26 +348,6 @@ def generate_graph(api_client):
 
                     s.node(f"{group_id}_{input_id}", **node_kwargs)
 
-                # Now render disabled inputs with faded styling
-                for input_data in inputs:
-                    if input_data.get("disabled", False):
-                        input_id = input_data["id"]
-                        description = input_data.get("description", "")
-                        label = f"[DISABLED] {input_id}"
-
-                        if description:
-                            label += f"\n------------\n{description}"
-
-                        s.node(
-                            f"{group_id}_{input_id}",
-                            label=label,
-                            shape="box",
-                            style="rounded,filled,dashed",
-                            fillcolor="lightgray",
-                            color="gray",
-                            penwidth="0.6",
-                        )
-
             # Create nodes for outputs
             with c.subgraph() as s:
                 s.attr(rank="sink")
@@ -376,7 +356,7 @@ def generate_graph(api_client):
                     is_disabled = output_data.get("disabled", False)
                     is_orphan = output_id in orphan_outputs
 
-                    # Skip creating node for disabled items in main loop
+                    # Skip creating node for disabled items in main loop (we'll handle in cluster below)
                     if is_disabled:
                         continue
 
@@ -423,24 +403,54 @@ def generate_graph(api_client):
 
                     s.node(f"{group_id}_{output_id}", **node_kwargs)
 
-                # Now render disabled outputs with faded styling
-                for output_data in outputs:
-                    if output_data.get("disabled", False):
-                        output_id = output_data["id"]
-                        description = output_data.get("description", "")
-                        label = f"[DISABLED] {output_id}"
+            # Create compact cluster for disabled components
+            disabled_inputs = [inp for inp in inputs if inp.get("disabled", False)]
+            disabled_outputs = [out for out in outputs if out.get("disabled", False)]
 
-                        if description:
-                            label += f"\n------------\n{description}"
+            if disabled_inputs or disabled_outputs:
+                with c.subgraph(name=f"cluster_disabled_{group_id}") as disabled_cluster:
+                    disabled_cluster.attr(
+                        label=f"Disabled ({len(disabled_inputs)} in, {len(disabled_outputs)} out)",
+                        style="dashed,filled",
+                        fillcolor="gray95",
+                        color="gray50",
+                        fontsize="9",
+                        fontcolor="gray30",
+                        penwidth="0.5"
+                    )
 
-                        s.node(
-                            f"{group_id}_{output_id}",
-                            label=label,
+                    # Render compact disabled inputs
+                    for input_data in disabled_inputs:
+                        input_id = input_data["id"]
+                        disabled_cluster.node(
+                            f"{group_id}_{input_id}",
+                            label=f"[D] {input_id}",
                             shape="box",
-                            style="rounded,filled,dashed",
+                            style="rounded,filled",
                             fillcolor="lightgray",
-                            color="gray",
-                            penwidth="0.6",
+                            color="gray60",
+                            penwidth="0.5",
+                            fontsize="8",
+                            width="0.8",
+                            height="0.3",
+                            margin="0.05,0.02"
+                        )
+
+                    # Render compact disabled outputs
+                    for output_data in disabled_outputs:
+                        output_id = output_data["id"]
+                        disabled_cluster.node(
+                            f"{group_id}_{output_id}",
+                            label=f"[D] {output_id}",
+                            shape="box",
+                            style="rounded,filled",
+                            fillcolor="lightgray",
+                            color="gray60",
+                            penwidth="0.5",
+                            fontsize="8",
+                            width="0.8",
+                            height="0.3",
+                            margin="0.05,0.02"
                         )
 
             # Add edges for connections with metrics overlay
