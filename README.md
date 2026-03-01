@@ -97,18 +97,11 @@ python -m unittest discover tests
 
 ## API Reference
 
-This repository includes local copies of Cribl API documentation for reference:
-
-*   [Cribl API Introduction](./docs/cribl_api_intro.md)
-*   [Authentication](./docs/cribl_api_authentication.md)
-*   [Update Configurations](./docs/cribl_api_update_configs.md)
-*   [OpenAPI Definition](./docs/cribl-apidocs-4.15.1-1b453caa.yml)
+This repository includes local copies of Cribl API documentation for reference. See the [API Documentation Index](./docs/API/CODE_REFERENCE.md).
 
 ## Documentation
 
-For a high-level overview of the system architecture, please see [Architecture Overview](docs/ARCHITECTURE.md).
-
-For detailed technical documentation of the codebase, including class references and logic, please see [Code Reference](docs/CODE_REFERENCE.md).
+For all documentation, including the [Architecture Overview](./docs/PLANNING/ARCHITECTURE.md), [Code Reference](./docs/API/CODE_REFERENCE.md), and documentation about specific features, please see the **[Documentation Index](docs/README.md)**.
 
 ## Contributing
 

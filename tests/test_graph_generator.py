@@ -83,8 +83,8 @@ class TestGraphGenerator(unittest.TestCase):
 
         self.assertIn('default_in_syslog -> default_out_s3', source_code)
 
-        # Verify disabled inputs are not present
-        self.assertNotIn("in_disabled", source_code)
+        # Ensure disabled items are listed in cluster_disabled
+        self.assertIn("[D] in_disabled", source_code)
         self.assertNotIn("Disabled Input", source_code)
 
     def test_generate_graph_missing_metrics(self):
@@ -92,9 +92,9 @@ class TestGraphGenerator(unittest.TestCase):
         mock_api_client = MagicMock()
         mock_api_client.get_worker_groups.return_value = {"items": [{"id": "default"}]}
         mock_api_client.get_sources.return_value = {
-            "items": [{"id": "in_syslog", "disabled": False, "connections": []}]
+            "items": [{"id": "in_syslog", "disabled": False, "connections": [{"output": "out_s3"}]}]
         }
-        mock_api_client.get_destinations.return_value = {"items": []}
+        mock_api_client.get_destinations.return_value = {"items": [{"id": "out_s3"}]}
 
         # Simulate API failure for status or empty
         mock_api_client.get_source_status.side_effect = Exception("API Error")
@@ -129,8 +129,13 @@ class TestGraphGenerator(unittest.TestCase):
         }
         mock_api_client.get_sources.return_value = {
             "items": [
-                {"id": "healthy_input", "disabled": False, "connections": []},
-                {"id": "unhealthy_input", "disabled": False, "connections": []}
+                {"id": "healthy_input", "disabled": False, "connections": [{"output": "out"}]},
+                {"id": "unhealthy_input", "disabled": False, "connections": [{"output": "out"}]}
+            ]
+        }
+        mock_api_client.get_destinations.return_value = {
+            "items": [
+                {"id": "out", "disabled": False}
             ]
         }
         mock_api_client.get_destinations.return_value = {"items": []}
@@ -231,7 +236,7 @@ class TestGraphGenerator(unittest.TestCase):
     def test_get_edge_attributes_medium_volume(self):
         """Test edge styling for medium volume traffic."""
         attrs = _get_edge_attributes(500, 1000)
-        self.assertEqual(attrs["color"], "orange")
+        self.assertEqual(attrs["color"], "gold")
         self.assertGreater(float(attrs["penwidth"]), 2.0)
 
     def test_get_edge_attributes_low_volume(self):
@@ -415,7 +420,7 @@ class TestGraphGenerator(unittest.TestCase):
         source_code = dot.source
 
         # Verify disabled input appears with gray styling
-        self.assertIn("[DISABLED] in_disabled", source_code)
+        self.assertIn("[D] in_disabled", source_code)
         self.assertIn("lightgray", source_code)
         self.assertIn("dashed", source_code)
 
@@ -499,7 +504,7 @@ class TestGraphGenerator(unittest.TestCase):
         # Verify all features are present
         self.assertIn("in_syslog", source_code)  # Connected input
         self.assertIn("⚠ [ORPHAN]", source_code)  # Orphan input
-        self.assertIn("[DISABLED]", source_code)  # Disabled input
+        self.assertIn("[D] in_disabled", source_code)  # Disabled input
         self.assertIn("EPS", source_code)  # Feature #1 metrics
 
 if __name__ == '__main__':
